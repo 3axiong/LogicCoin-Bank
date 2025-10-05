@@ -7,5 +7,5 @@ __pycache__/
 # Virtual Environment
 venv/
 
-# Database thats created when app.py is ran (We can add this when we actually want to save students data)
-instance/
+# Django database files (Will be using PostgreSQL later)
+db.sqlite3
