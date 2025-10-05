@@ -46,7 +46,7 @@ class Student(db.Model):
     available_coins = db.Column(db.Integer, default=0)
 
 #React front end should send json data with student name to this route to get the balance of coins for the student.
-@app.route('/balance')
+@app.route('/balance', methods=['POST'])
 def coinbalance():
     data = request.get_json()
     student = Student.query.filter_by(email=data['name']).first()
@@ -55,7 +55,7 @@ def coinbalance():
     return {"available_coins": student.available_coins}
 
 #React front end should send json data with student name and amount to this route to award coins to the student.
-@app.route('/awardCoins')
+@app.route('/awardCoins', methods=['POST'])
 def awardCoins():
     data = request.get_json()
     student = Student.query.filter_by(email=data['name']).first()
@@ -68,7 +68,7 @@ def awardCoins():
     return {"message": "Coins awarded successfully", "available_coins": student.available_coins}
 
 #React front end should send json data with student name and amount to this route to make a transaction.
-@app.route('/transaction')
+@app.route('/transaction', methods=['POST'])
 def transaction():
     data = request.get_json()
     student = Student.query.filter_by(email=data['name']).first()
