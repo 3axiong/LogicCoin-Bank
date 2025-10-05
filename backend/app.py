@@ -35,26 +35,24 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 #Class for creating a new user.
-class User(db.Model):
+class Student(db.Model):
     __tablename__ = 'students'
     #Unique id for each user
     id = db.Column("id", db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(200), nullable=False)
     #Class and user information
     email = db.Column(db.String(100), unique=True, nullable=False)
     available_coins = db.Column(db.Integer, default=0)
 
-@app.route('/get_coins')
-def get_coins():
-    users = User.query.all()
-    result = []
-    for user in users:
-        user_data = {}
-        user_data['id'] = user.id
-        user_data['email'] = user.email
-        user_data['available_coins'] = user.available_coins
-        result.append(user_data)
-    return {"users": result}
+#React front end should send json data with student name to this route to get the balance of coins for the student.
+@app.route('/balance')
+def coinbalance():
+    data = request.get_json()
+    student = Student.query.filter_by(email=data['name']).first()
+    if not student:
+        return {"message": "Student not found"}
+    return {"available_coins": student.available_coins}
 
 #React front end should send json data to this route to add the student to the database.
 @app.route('/register', methods=['POST'])
@@ -62,7 +60,7 @@ def register():
     data = request.get_json()
 
     hashed_password = generate_password_hash(data['password'], method='sha256')
-    new_user = User(email=data['email'], password=hashed_password)
+    new_user = Student(email=data['email'], password=hashed_password)
 
     db.session.add(new_user)
     db.session.commit()
@@ -73,10 +71,10 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    user = User.query.filter_by(email=data['email']).first()
+    user = Student.query.filter_by(email=data['email']).first()
 
     if not user:
-        return {"message": "User not found"}
+        return {"message": "Student not found"}
 
     if check_password_hash(user.password, data['password']):
         return {"message": "login successful"}
