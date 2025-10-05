@@ -54,6 +54,35 @@ def coinbalance():
         return {"message": "Student not found"}
     return {"available_coins": student.available_coins}
 
+#React front end should send json data with student name and amount to this route to award coins to the student.
+@app.route('/awardCoins')
+def awardCoins():
+    data = request.get_json()
+    student = Student.query.filter_by(email=data['name']).first()
+    if not student:
+        return {"message": "Student not found"}
+    
+    student.available_coins += data['amount']
+    db.session.commit()
+    
+    return {"message": "Coins awarded successfully", "available_coins": student.available_coins}
+
+#React front end should send json data with student name and amount to this route to make a transaction.
+@app.route('/transaction')
+def transaction():
+    data = request.get_json()
+    student = Student.query.filter_by(email=data['name']).first()
+    if not student:
+        return {"message": "Student not found"}
+    
+    if student.available_coins < data['amount']:
+        return {"message": "Insufficient balance"}
+    
+    student.available_coins -= data['amount']
+    db.session.commit()
+    
+    return {"message": "Transaction successful", "available_coins": student.available_coins}
+
 #React front end should send json data to this route to add the student to the database.
 @app.route('/register', methods=['POST'])
 def register():
