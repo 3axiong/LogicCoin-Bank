@@ -648,3 +648,35 @@ body {
     text-align: center;
   }
 }
+
+:root {
+  --asu-maroon: #8C1D40;
+  --asu-gold: #FFC627;
+}
+.lb-wrap { padding: 24px; max-width: 1100px; margin: 24px auto 56px; position: relative; z-index: 10; }
+.lb-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.18); border: 2px solid var(--asu-gold); }
+.lb-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(90deg, var(--asu-maroon), #5f132b); color: #fff; }
+.lb-title { margin: 0; font-weight: 800; font-size: 20px; letter-spacing: .3px; }
+.lb-chip { background: var(--asu-gold); color: #111; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 999px; }
+
+.lb-podium { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+@media (min-width: 768px) { .lb-podium { grid-template-columns: repeat(3, 1fr); } }
+
+.lb-podium-card { position: relative; border-radius: 14px; padding: 16px; color: #fff; text-align: center; }
+.lb-gold { background: linear-gradient(135deg, var(--asu-gold), #ffe792); color: #111; }
+.lb-maroon { background: linear-gradient(135deg, var(--asu-maroon), #5f132b); }
+.lb-rank-badge { position: absolute; top: 10px; left: 10px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.9); color: #111; font-weight: 800; display: grid; place-items: center; }
+.lb-name { margin-top: 8px; font-weight: 800; font-size: 18px; }
+.lb-coins { margin-top: 6px; font-weight: 800; font-size: 22px; }
+.lb-suffix { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-left: 6px; }
+
+.lb-table-scroller { overflow-x: auto; }
+.lb-table { width: 100%; border-collapse: collapse; }
+.lb-table thead { background: #f7f7f7; }
+.lb-table th, .lb-table td { padding: 12px 16px; text-align: left; }
+.lb-table tbody tr { border-top: 1px solid #eee; }
+.lb-table tbody tr:hover { background: #fafafa; }
+.lb-rank.lb-top { color: var(--asu-maroon); font-weight: 800; }
+.lb-coins-cell { white-space: nowrap; }
+
+.lb-note { padding: 10px 16px 16px; font-size: 12px; color: #555; }
