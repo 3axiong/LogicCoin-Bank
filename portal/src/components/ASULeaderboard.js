@@ -61,8 +61,6 @@ export default function ASULeaderboard() {
             </tbody>
           </table>
         </div>
-
-        <p className="lb-note">* Demo data. Wire to /api/leaderboard later.</p>
       </div>
     </section>
   );
