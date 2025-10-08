@@ -27,7 +27,6 @@ export default function ASULeaderboard() {
       <div className="lb-card">
         <div className="lb-head">
           <h2 id="lb-title" className="lb-title">Leaderboard</h2>
-          <span className="lb-chip">ASU Colors</span>
         </div>
 
         {/* Top 3 */}
@@ -36,7 +35,7 @@ export default function ASULeaderboard() {
             <div key={p.id} className={`lb-podium-card ${i === 0 ? "lb-gold" : "lb-maroon"}`}>
               <div className="lb-rank-badge">{i + 1}</div>
               <div className="lb-name">{p.name}</div>
-              <div className="lb-coins">{p.coins}<span className="lb-suffix"> LC</span></div>
+              <div className="lb-coins">{p.coins}<span className="lb-suffix"> Coins</span></div>
             </div>
           ))}
         </div>
@@ -55,7 +54,7 @@ export default function ASULeaderboard() {
                   <td className={`lb-rank ${idx < 3 ? "lb-top" : ""}`}>{idx + 1}</td>
                   <td>{s.name}</td>
                   <td className="lb-coins-cell">
-                    <strong>{s.coins}</strong> <span className="lb-suffix">LC</span>
+                    <strong>{s.coins}</strong> <span className="lb-suffix">Coins</span>
                   </td>
                 </tr>
               ))}
