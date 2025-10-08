@@ -21,86 +21,50 @@ export default function ASULeaderboard() {
   ];
 
   const sorted = [...data].sort((a, b) => b.coins - a.coins);
-  const podium = sorted.slice(0, 3);
-  const rest = sorted.slice(3);
 
   return (
-    <div className="asu-shell" style={{ background: `linear-gradient(180deg, ${ASU.maroon} 0%, ${ASU.maroon} 55%, ${ASU.dark} 100%)` }}>
-      {/* Header */}
-      <header className="asu-header">
-        <h1 className="asu-title">LogicCoin Leaderboard</h1>
-        <div className="asu-subtitle">Arizona State University</div>
-        <p className="asu-desc">Top students by LogicCoin balance.</p>
-      </header>
-
-      {/* Podium */}
-      <section className="asu-podium">
-        {podium.map((p, i) => (
-          <div
-            key={p.id}
-            className={`asu-podium-card ${i === 0 ? "asu-podium-gold" : "asu-podium-dark"}`}
-          >
-            <div className="asu-podium-inner">
-              <div className="asu-podium-top">
-                <span className={`asu-badge ${i === 0 ? "asu-badge-dark" : "asu-badge-light"}`}>
-                  {i === 0 ? "CHAMPION" : i === 1 ? "RUNNER-UP" : "TOP 3"}
-                </span>
-                <span className={`asu-trophy ${i === 0 ? "asu-trophy-dark" : "asu-trophy-light"}`}>🏆</span>
-              </div>
-              <h3 className={`asu-name ${i === 0 ? "asu-text-dark" : "asu-text-light"}`}>{p.name}</h3>
-              <div className={`asu-score ${i === 0 ? "asu-text-dark" : "asu-text-light"}`}>
-                <span className="asu-score-num">{p.coins}</span>
-                <span className="asu-score-unit">coins</span>
-              </div>
-            </div>
-            <div className={`asu-ribbon ${i === 0 ? "asu-ribbon-dark" : "asu-ribbon-light"}`}>
-              {i === 0 ? "Gold" : i === 1 ? "Silver" : "Bronze"}
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* Table */}
-      <section className="asu-table-wrap">
-        <div className="asu-table-card" style={{ borderColor: ASU.gold }}>
-          <div className="asu-table-head">
-            <h2 className="asu-table-title" style={{ color: ASU.maroon }}>Full Rankings</h2>
-            <span className="asu-chip" style={{ background: ASU.gold, color: "#111" }}>
-              ASU Colors
-            </span>
-          </div>
-
-          <div className="asu-table-scroller">
-            <table className="asu-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Student</th>
-                  <th>Coins</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((s, idx) => (
-                  <tr key={s.id}>
-                    <td className={`asu-rank ${idx < 3 ? "asu-rank-top" : ""}`}>{idx + 1}</td>
-                    <td>{s.name}</td>
-                    <td>
-                      <span className="asu-coins">
-                        <span className="asu-coins-num">{s.coins}</span>
-                        <span className="asu-coins-suffix">LC</span>
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <section className="lb-wrap" aria-labelledby="lb-title">
+      <div className="lb-card">
+        <div className="lb-head">
+          <h2 id="lb-title" className="lb-title">Leaderboard</h2>
+          <span className="lb-chip">ASU Colors</span>
         </div>
 
-        <p className="asu-note">
-          * when Django API is ready
-        </p>
-      </section>
-    </div>
+        {/* Top 3 */}
+        <div className="lb-podium">
+          {sorted.slice(0, 3).map((p, i) => (
+            <div key={p.id} className={`lb-podium-card ${i === 0 ? "lb-gold" : "lb-maroon"}`}>
+              <div className="lb-rank-badge">{i + 1}</div>
+              <div className="lb-name">{p.name}</div>
+              <div className="lb-coins">{p.coins}<span className="lb-suffix"> LC</span></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Full table */}
+        <div className="lb-table-scroller">
+          <table className="lb-table">
+            <thead>
+              <tr>
+                <th>Rank</th><th>Student</th><th>Coins</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((s, idx) => (
+                <tr key={s.id}>
+                  <td className={`lb-rank ${idx < 3 ? "lb-top" : ""}`}>{idx + 1}</td>
+                  <td>{s.name}</td>
+                  <td className="lb-coins-cell">
+                    <strong>{s.coins}</strong> <span className="lb-suffix">LC</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="lb-note">* Demo data. Wire to /api/leaderboard later.</p>
+      </div>
+    </section>
   );
 }
