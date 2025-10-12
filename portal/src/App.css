@@ -452,6 +452,18 @@ body {
   background: #6d1028;
 }
 
+.back-button {
+  background: #8b1538;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
 /* Activities List */
 .activities-container {
   padding: 40px;

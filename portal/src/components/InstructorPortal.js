@@ -39,6 +39,7 @@ const InstructorPortal = () => {
 
   const StudentsView = () => (
     <div className="students-container">
+      <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
       <h1 className="page-title">Students' List</h1>
       <div className="students-table">
         {students.map(student => (
@@ -140,6 +141,7 @@ const InstructorPortal = () => {
 
   const ProductsManagementView = () => (
     <div className="products-container">
+      <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
       <h1 className="page-title">Edit Products</h1>
       <div className="add-product-container">
         <button className="add-product-button">Add Product +</button>
