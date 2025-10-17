@@ -6,7 +6,7 @@ export default function LoginScreen({ role, onBack, onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin?.(); //tmp
+    onLogin?.(); //to test
   };
 
   return (
@@ -26,6 +26,7 @@ export default function LoginScreen({ role, onBack, onLogin }) {
           <h1 className="main-title">
             {role === "instructor" ? "Instructor" : "Student"} Portal
           </h1>
+
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "center" }}>
             <input
               type="email"
@@ -43,15 +44,9 @@ export default function LoginScreen({ role, onBack, onLogin }) {
               required
               style={{ padding: "10px", borderRadius: "8px", width: "250px", border: "none" }}
             />
-            <button type="submit" className="cta-button">
-              Log In
-            </button>
-            <button
-              type="button"
-              className="cta-button"
-              style={{ background: "gray" }}
-              onClick={onBack}
-            >
+
+            <button type="submit" className="cta-button">Log In</button>
+            <button type="button" className="cta-button" style={{ background: "gray" }} onClick={onBack}>
               Back
             </button>
           </form>
