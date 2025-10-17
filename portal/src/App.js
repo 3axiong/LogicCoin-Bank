@@ -50,7 +50,7 @@ function App() {
               className="cta-button" 
               onClick={() => { setRole('instructor'); setView('login'); }}
             >
-              Faculty Portal
+              Instructor Portal
             </button>
           </div>
         </div>
