@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import StudentPortal from './components/StudentPortal';
 import InstructorPortal from './components/InstructorPortal';
+import ASULeaderboard from "./components/ASULeaderboard";
 
 function App() {
   const [userType, setUserType] = useState(null); // 'student' or 'instructor'
@@ -39,6 +40,7 @@ function App() {
           </div>
         </div>
       </div>
+                <ASULeaderboard />
     </div>
   );
 
