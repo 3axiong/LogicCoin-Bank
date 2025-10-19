@@ -10,8 +10,14 @@ function App() {
   const [role, setRole] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
-  if (view === 'student') return <StudentPortal user={currentUser} />;
-  if (view === 'instructor') return <InstructorPortal user={currentUser} />;
+  if (view === 'student') return (
+    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+  );
+
+  if (view === 'instructor') return (
+    <InstructorPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+  );
+
 
   if (view === 'login') {
     return (
