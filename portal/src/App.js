@@ -8,16 +8,20 @@ import LoginScreen from "./components/LoginScreen";
 function App() {
   const [view, setView] = useState('home');
   const [role, setRole] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  if (view === 'student') return <StudentPortal />;
-  if (view === 'instructor') return <InstructorPortal />;
+  if (view === 'student') return <StudentPortal user={currentUser} />;
+  if (view === 'instructor') return <InstructorPortal user={currentUser} />;
 
   if (view === 'login') {
     return (
       <LoginScreen
         role={role}
         onBack={() => setView('home')}
-        onLogin={() => setView(role)}
+        onLogin={(data) => {
+          setCurrentUser(data);            
+          setView(data.role);              
+        }}
       />
     );
   }
