@@ -4,10 +4,29 @@ export default function LoginScreen({ role, onBack, onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLogin?.(); //to test
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await fetch("http://localhost:8000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert(data.error || "Login failed");
+      return;
+    }
+
+    onLogin?.(data); 
+  } catch (err) {
+    console.error(err);
+    alert("Network error");
+  }
+};
 
   return (
     <div className="app">
