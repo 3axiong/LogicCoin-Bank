@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { students, products, activities, instructors } from '../data/mockData';
 
-const InstructorPortal = () => {
+const InstructorPortal = ({ onBack }) => {
   const [currentView, setCurrentView] = useState('welcome');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -175,6 +175,9 @@ const InstructorPortal = () => {
   return (
     <div className="app">
       <header className="header">
+        <button className="back-button" onClick={onBack}>
+          ← Back to Home
+        </button>
         <div className="user-info">{currentInstructor.name}</div>
         <nav className="nav-menu">
           <button className="nav-item" onClick={() => setCurrentView('students')}>

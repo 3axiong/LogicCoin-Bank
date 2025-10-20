@@ -43,11 +43,11 @@ function App() {
   );
 
   if (userType === 'student') {
-    return <StudentPortal />;
+    return <StudentPortal onBack={() => setUserType(null)} />;
   }
   
   if (userType === 'instructor') {
-    return <InstructorPortal />;
+    return <InstructorPortal onBack={() => setUserType(null)} />;
   }
 
   return <LoginView />;
