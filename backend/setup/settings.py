@@ -26,15 +26,15 @@ SECRET_KEY = 'django-insecure-h&0sx&y&m#*xezpmw!o%xz^6wuo_wr00e6qgjmjjaqkca$v(w%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", 
-    "http://localhost:3000",  
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:3000", "http://127.0.0.1:3000",  
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:3000", "http://127.0.0.1:3000",
 ]
 
 # Application definition
@@ -93,6 +93,9 @@ if os.getenv("DB_NAME"):
             "PASSWORD": os.getenv("DB_PASSWORD", "logiccoin"),
             "HOST": os.getenv("DB_HOST", "localhost"),
             "PORT": os.getenv("DB_PORT", "5432"),
+            "OPTIONS": {
+                "sslmode": "disable",          
+            },
         }
     }
 else:
@@ -102,7 +105,6 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
