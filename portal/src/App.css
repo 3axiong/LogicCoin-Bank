@@ -141,8 +141,8 @@ body {
 }
 
 .logo-circle {
-  width: 300px;
-  height: 300px;
+  width: 350px;
+  height: 350px;
   background: linear-gradient(135deg, #87ceeb 0%, #98fb98 100%);
   border-radius: 50%;
   display: flex;
@@ -157,6 +157,13 @@ body {
   font-weight: bold;
   color: #1e8b5c;
   text-align: center;
+}
+
+.logo-image {
+  width: 216px;
+  height: 216px;
+  object-fit: contain;
+  border-radius: 0;
 }
 
 .globe-icon {
@@ -661,12 +668,18 @@ body {
   }
 
   .logo-circle {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
   }
 
   .logo-text {
     font-size: 24px;
+  }
+
+  .logo-image {
+    width: 162px;
+    height: 162px;
+    border-radius: 0;
   }
 
   .main-title {

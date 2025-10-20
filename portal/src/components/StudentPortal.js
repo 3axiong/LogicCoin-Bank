@@ -44,7 +44,7 @@ const StudentPortal = ({ onBack }) => {
       <div className="left-section">
         <div className="logo-section">
           <div className="logo-circle">
-            <div className="logo-text">ASU LOGO</div>
+            <img src="/asu_logo.png" alt="ASU Logo" className="logo-image" />
             <div className="globe-icon">🌐</div>
           </div>
         </div>
