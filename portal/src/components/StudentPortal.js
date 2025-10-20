@@ -104,12 +104,6 @@ const StudentPortal = ({ onBack }) => {
             >
               {currentStudent.balance < product.price ? 'Insufficient Funds' : 'Purchase'}
             </button>
-            <div className="page-indicators">
-              <div className="indicator"></div>
-              <div className="indicator"></div>
-              <div className="indicator active"></div>
-              <div className="indicator"></div>
-            </div>
           </div>
         ))}
       </div>
@@ -128,12 +122,6 @@ const StudentPortal = ({ onBack }) => {
             <div>{activity.amount} coins</div>
           </div>
         ))}
-      </div>
-      <div className="page-indicators">
-        <div className="indicator"></div>
-        <div className="indicator"></div>
-        <div className="indicator"></div>
-        <div className="indicator active"></div>
       </div>
     </div>
   );

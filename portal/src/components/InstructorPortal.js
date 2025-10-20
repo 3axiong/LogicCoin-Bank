@@ -160,12 +160,6 @@ const InstructorPortal = ({ onBack }) => {
             </div>
             <div className="product-price">{product.price} Coins</div>
             <button className="purchase-button">Edit Product</button>
-            <div className="page-indicators">
-              <div className="indicator"></div>
-              <div className="indicator"></div>
-              <div className="indicator active"></div>
-              <div className="indicator"></div>
-            </div>
           </div>
         ))}
       </div>
