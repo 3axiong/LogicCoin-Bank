@@ -10,6 +10,85 @@ const InstructorPortal = () => {
   const [products, setProducts] = useState(productsSeed);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [activityList, setActivityList] = useState(activities);
+  const [showTxnModal, setShowTxnModal] = useState(false);
+  const [editingTxn, setEditingTxn] = useState(null);
+  const [studentList, setStudentList] = useState(students);
+  const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
+  const [alert, setAlert] = useState({ open: false, message: '' });
+
+  const showAlert = (message) => setAlert({ open: true, message });
+  const closeAlert = () => setAlert({ open: false, message: '' });
+
+  const askConfirm = (message, onConfirm) => {
+    setConfirm({ open: true, message, onConfirm });
+  };
+
+  const closeConfirm = () => {
+    setConfirm({ open: false, message: '', onConfirm: null });
+  };
+
+  const openEditTransaction = (activity) => {
+    setEditingTxn(activity);
+    setShowTxnModal(true);
+  };
+  const adjustStudentBalance = (studentId, delta) => {
+
+    setStudentList(prev =>
+      prev.map(s => (s.id === studentId ? { ...s, balance: s.balance + delta } : s))
+    );
+    setSelectedStudent(prev =>
+      prev && prev.id === studentId ? { ...prev, balance: prev.balance + delta } : prev
+    );
+  };
+
+  const saveTransaction = ({ amount }) => {
+    if (!editingTxn) return;
+
+    const id = editingTxn.id;
+    const oldAmount = Number(editingTxn.amount);
+    const newAmount = Number(amount);
+    const delta = oldAmount - newAmount;
+
+    setActivityList(prev =>
+      prev.map(a => (a.id === id ? { ...a, amount: newAmount } : a))
+    );
+
+    if (selectedActivity?.id === id) {
+      setSelectedActivity(prev => (prev ? { ...prev, amount: newAmount } : prev));
+    }
+
+    if (!editingTxn.refunded) {
+      adjustStudentBalance(editingTxn.studentId, delta);
+    }
+
+    setShowTxnModal(false);
+    setEditingTxn(null);
+    setCurrentView('studentActivities');
+  };
+
+  const refundTransaction = (activity) => {
+    const act = activity ?? editingTxn;
+    if (!act) return;
+    if (act.refunded) return; 
+
+    const { id, studentId } = act;
+    const refundAmount = Number(act.amount) || 0;
+
+    setActivityList(prev =>
+      prev.map(a => (a.id === id ? { ...a, refunded: true } : a))
+    );
+
+    if (selectedActivity?.id === id) {
+      setSelectedActivity(prev => (prev ? { ...prev, refunded: true } : prev));
+    }
+
+    adjustStudentBalance(studentId, refundAmount);
+
+    setShowTxnModal(false);
+    setEditingTxn(null);
+    setCurrentView('studentActivities');
+  };
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -69,7 +148,7 @@ const InstructorPortal = () => {
     <div className="students-container">
       <h1 className="page-title">Students' List</h1>
       <div className="students-table">
-        {students.map(student => (
+        {studentList.map(student => (
           <div key={student.id} className="student-row">
             <div className="student-name">{student.name}</div>
             <button 
@@ -94,13 +173,16 @@ const InstructorPortal = () => {
   );
 
   const StudentActivitiesView = () => {
-    const studentActivities = activities.filter(activity => 
+    const studentActivities = activityList.filter(activity => 
       activity.studentId === selectedStudent?.id
     );
 
     return (
       <div className="activities-container">
         <h1 className="page-title">{selectedStudent?.name}'s Activities</h1>
+        <h2 className="page-title balance-title">
+          Current Balance: <span className="balance-highlight">{selectedStudent?.balance ?? 0}</span>
+        </h2>
         <div className="activities-table">
           <div className="activity-row activity-header">
             <div>Purchase ID</div>
@@ -114,13 +196,21 @@ const InstructorPortal = () => {
               <div>{activity.description}</div>
               <div>{activity.product}</div>
               <div>{activity.date}</div>
-              <div>{activity.amount} coins</div>
-              <button 
-                className="edit-button"
+              <div>
+                {activity.amount} coins
+                {activity.refunded && <span className="term refunded">Refunded</span>}
+              </div>
+              <button
+                className={`edit-button ${activity.refunded ? 'disabled' : ''}`}
                 onClick={() => {
+                  if (activity.refunded) {
+                    showAlert('This transaction has been refunded.');
+                    return;
+                  }
                   setSelectedActivity(activity);
                   setCurrentView('editActivity');
                 }}
+                aria-disabled={activity.refunded}
               >
                 Edit Activity
               </button>
@@ -152,9 +242,31 @@ const InstructorPortal = () => {
           {selectedStudent?.name}'s Balance: {selectedStudent?.balance} coins
         </div>
         <div className="action-buttons">
-          <button className="action-button">Edit Transaction</button>
-          <button className="action-button">Refund</button>
-          {/* <button className="action-button">Cancel Purchase</button> */}
+        <button
+          className="action-button"
+          onClick={() => {
+            if (selectedActivity?.refunded) {
+              showAlert('This transaction has been refunded.');
+              return;
+            }
+            openEditTransaction(selectedActivity);
+          }}
+        >
+          Edit Transaction
+        </button>
+        <button
+          className="action-button"
+          disabled={selectedActivity?.refunded}
+          onClick={() => {
+            if (!selectedActivity || selectedActivity.refunded) return;
+            askConfirm(
+              'Refund this transaction?',
+              () => refundTransaction(selectedActivity)
+            );
+          }}
+        >
+          Refund
+        </button>
         </div>
         <div className="page-indicators">
           <div className="indicator"></div>
@@ -177,12 +289,12 @@ const InstructorPortal = () => {
           <div key={product.id} className="product-card">
             <div className="product-title">{product.name}</div>
             <div className="product-description">
-              {product.description.split('\n').map((line, index) => (
+              {product.description?.split('\n').map((line, index) => (
                 <div key={index}>{line}</div>
               ))}
             </div>
             <div className="product-terms">
-              {product.terms.map((term, index) => (
+              {product.terms?.map((term, index) => (
                 <span key={index} className="term">{term}</span>
               ))}
             </div>
@@ -226,6 +338,37 @@ const InstructorPortal = () => {
           initialValues={editingProduct}
           onClose={() => setShowProductModal(false)}
           onSubmit={saveProduct}
+        />
+      )}
+      {showTxnModal && currentView === 'editActivity' && editingTxn && (
+        <EditTransactionModal
+          key={editingTxn.id}
+          initialValues={editingTxn}
+          onClose={() => setShowTxnModal(false)}
+          onSave={(data) => askConfirm(
+            `Save changes? New amount: ${Number(data.amount)} coins.`,
+            () => saveTransaction(data)
+          )}
+          onRefund={() => askConfirm(
+            'Refund this transaction?',
+            () => refundTransaction() 
+          )}
+        />
+      )}
+      {confirm.open && (
+        <ConfirmModal
+          message={confirm.message}
+          onCancel={closeConfirm}
+          onConfirm={() => {
+            confirm.onConfirm?.();
+            closeConfirm();
+          }}
+        />
+      )}
+      {alert.open && (
+        <AlertModal
+          message={alert.message}
+          onClose={closeAlert}
         />
       )}
     </div>
@@ -353,7 +496,7 @@ const ProductModal = ({ initialValues, onClose, onSubmit }) => {
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn-primary" disabled={price === '' || Number(price) < 0}>
               {isEdit ? 'Save Changes' : 'Create Product'}
             </button>
           </div>
@@ -362,129 +505,167 @@ const ProductModal = ({ initialValues, onClose, onSubmit }) => {
     </div>
   );
 };
+const EditTransactionModal = ({ initialValues, onClose, onSave, onRefund }) => {
+  const [amount, setAmount] = useState(
+    initialValues?.amount !== undefined ? String(initialValues.amount) : ''
+  );
+  const [error, setError] = useState('');
+  const dialogRef = useRef(null);
 
-// const AddProductModal = ({ onClose, onSubmit }) => {
-//   const [name, setName] = useState('');
-//   const [price, setPrice] = useState('');
-//   const [termsInput, setTermsInput] = useState(''); // one term per line
-//   const [description, setDescription] = useState('');
-//   const [errors, setErrors] = useState({});
-//   const dialogRef = useRef(null);
+  useEffect(() => {
+    const onKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKeyDown);
+    dialogRef.current?.querySelector('input, button')?.focus();
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
-//   useEffect(() => {
-//     const onKeyDown = (e) => {
-//       if (e.key === 'Escape') onClose();
-//     };
-//     document.addEventListener('keydown', onKeyDown);
-//     dialogRef.current?.querySelector('input, textarea, button')?.focus();
-//     return () => document.removeEventListener('keydown', onKeyDown);
-//   }, [onClose]);
+  const validate = () => {
+    if (amount === '' || Number.isNaN(Number(amount)) || Number(amount) < 0) {
+      setError('Enter a valid non-negative price.');
+      return false;
+    }
+    setError('');
+    return true;
+  };
 
-//   const validate = () => {
-//     const e = {};
-//     if (!name.trim()) e.name = 'Product name is required.';
-//     if (price === '' || Number.isNaN(Number(price)) || Number(price) < 0) {
-//       e.price = 'Enter a valid non-negative price.';
-//     }
+  const submit = (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    onSave({ amount: Number(amount) });
+  };
 
-//     const lines = termsInput.split('\n').map(s => s.trim()).filter(Boolean);
-//     if (termsInput && lines.length === 0) e.terms = 'Enter at least one term or leave it blank.';
-//     setErrors(e);
-//     return Object.keys(e).length === 0;
-//   };
+  const onBackdropClick = (e) => { if (e.target === e.currentTarget) onClose(); };
 
-//   const submit = (e) => {
-//     e.preventDefault();
-//     if (!validate()) return;
-//     const terms = termsInput
-//       .split('\n')
-//       .map(s => s.trim())
-//       .filter(Boolean);
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={onBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-transaction-title"
+      ref={dialogRef}
+    >
+      <div className="modal-panel">
+        <h2 id="edit-transaction-title" className="modal-title">Edit Transaction</h2>
 
-//     onSubmit({
-//       name: name.trim(),
-//       price: Number(price),
-//       description: description.trim(),
-//       terms
-//     });
-//   };
+        <form onSubmit={submit} className="modal-form">
+          <label className="form-label">
+            Paid Price (Coins)
+            <input
+              type="number"
+              min="0"
+              step="1"
+              className="form-input"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="e.g., 250"
+            />
+            {error && <div className="form-error">{error}</div>}
+          </label>
 
-//   const onBackdropClick = (e) => {
-//     if (e.target === e.currentTarget) onClose();
-//   };
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
 
-//   return (
-//     <div
-//       className="modal-backdrop"
-//       onClick={onBackdropClick}
-//       role="dialog"
-//       aria-modal="true"
-//       aria-labelledby="add-product-title"
-//       ref={dialogRef}
-//     >
-//       <div className="modal-panel">
-//         <h2 id="add-product-title" className="modal-title">Add New Product</h2>
-//         <form onSubmit={submit} className="modal-form">
-//           <label className="form-label">
-//             Product Name
-//             <input
-//               type="text"
-//               className="form-input"
-//               value={name}
-//               onChange={(e) => setName(e.target.value)}
-//               placeholder="e.g., Homework Extension"
-//             />
-//             {errors.name && <div className="form-error">{errors.name}</div>}
-//           </label>
+            <button
+              type="button"
+              className="btn-danger"
+              onClick={onRefund}
+              title="Mark this transaction as refunded"
+            >
+              Refund
+            </button>
 
-//           <label className="form-label">
-//             Price (Coins)
-//             <input
-//               type="number"
-//               min="0"
-//               step="1"
-//               className="form-input"
-//               value={price}
-//               onChange={(e) => setPrice(e.target.value)}
-//               placeholder="e.g., 100"
-//             />
-//             {errors.price && <div className="form-error">{errors.price}</div>}
-//           </label>
+            <button type="submit" className="btn-primary">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
-//           <label className="form-label">
-//             Terms
-//             <textarea
-//               className="form-textarea"
-//               value={termsInput}
-//               onChange={(e) => setTermsInput(e.target.value)}
-//               rows={4}
-//             />
-//             {errors.terms && <div className="form-error">{errors.terms}</div>}
-//           </label>
+const ConfirmModal = ({ message, onCancel, onConfirm }) => {
+  const dialogRef = useRef(null);
+  const [busy, setBusy] = useState(false);
 
-//           <label className="form-label">
-//             Description
-//             <textarea
-//               className="form-textarea"
-//               value={description}
-//               onChange={(e) => setDescription(e.target.value)}
-//               rows={4}
-//             />
-//           </label>
+  useEffect(() => {
+    const onKeyDown = (e) => { if (e.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', onKeyDown);
+    dialogRef.current?.querySelector('button')?.focus();
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onCancel]);
 
-//           <div className="modal-actions">
-//             <button type="button" className="btn-secondary" onClick={onClose}>
-//               Cancel
-//             </button>
-//             <button type="submit" className="btn-primary">
-//               Create Product
-//             </button>
-//           </div>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
+  const onBackdropClick = (e) => { if (e.target === e.currentTarget) onCancel(); };
+
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={onBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      ref={dialogRef}
+    >
+      <div className="modal-panel confirm">
+        <h2 id="confirm-title" className="modal-title">Please Confirm</h2>
+        <p className="confirm-message">{message}</p>
+        <div className="modal-actions">
+          <button type="button" className="btn-secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              if (busy) return;
+              setBusy(true);
+              onConfirm();
+            }}
+            disabled={busy}
+          >
+            {busy ? 'Working…' : 'Yes, Confirm'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+const AlertModal = ({ message, onClose }) => {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKeyDown);
+    dialogRef.current?.querySelector('button')?.focus();
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  const onBackdropClick = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={onBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="alert-title"
+      ref={dialogRef}
+    >
+      <div className="modal-panel confirm">
+        <h2 id="alert-title" className="modal-title">Notice</h2>
+        <p className="confirm-message">{message}</p>
+        <div className="modal-actions">
+          <button type="button" className="btn-primary" onClick={onClose}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default InstructorPortal;
 
