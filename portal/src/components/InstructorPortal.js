@@ -8,12 +8,32 @@ const InstructorPortal = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
   const [products, setProducts] = useState(productsSeed);
-  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [{ id: `p_${Date.now()}`, ...newProduct }, ...prev]);
-    setShowAddProductModal(false);
+  const openAddModal = () => {
+    setEditingProduct(null);
+    setShowProductModal(true);
   };
+
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    setShowProductModal(true);
+  };
+
+  const saveProduct = (data) => {
+    if (editingProduct) {
+      // edit existing
+      setProducts(prev =>
+        prev.map(p => (p.id === editingProduct.id ? { ...p, ...data } : p))
+      );
+    } else {
+      // create new
+      setProducts(prev => [{ id: `p_${Date.now()}`, ...data }, ...prev]);
+    }
+    setShowProductModal(false);
+  };
+  
 
   const WelcomeView = () => (
     <div className="main-content">
@@ -132,9 +152,9 @@ const InstructorPortal = () => {
           {selectedStudent?.name}'s Balance: {selectedStudent?.balance} coins
         </div>
         <div className="action-buttons">
-          <button className="action-button">Edit Price</button>
+          <button className="action-button">Edit Transaction</button>
           <button className="action-button">Refund</button>
-          <button className="action-button">Cancel Purchase</button>
+          {/* <button className="action-button">Cancel Purchase</button> */}
         </div>
         <div className="page-indicators">
           <div className="indicator"></div>
@@ -150,7 +170,7 @@ const InstructorPortal = () => {
     <div className="products-container">
       <h1 className="page-title">Edit Products</h1>
       <div className="add-product-container">
-        <button className="add-product-button" onClick={() => setShowAddProductModal(true)}>Add Product +</button>
+        <button className="add-product-button" onClick={openAddModal}>Add Product +</button>
       </div>
       <div className="products-grid">
         {products.map(product => (
@@ -167,7 +187,8 @@ const InstructorPortal = () => {
               ))}
             </div>
             <div className="product-price">{product.price} Coins</div>
-            <button className="purchase-button">Edit Product</button>
+            <button className="purchase-button"
+            onClick={() => openEditModal(product)}>Edit Product</button>
             <div className="page-indicators">
               <div className="indicator"></div>
               <div className="indicator"></div>
@@ -199,32 +220,46 @@ const InstructorPortal = () => {
       {currentView === 'studentActivities' && <StudentActivitiesView />}
       {currentView === 'editActivity' && <EditActivityView />}
       {currentView === 'products' && <ProductsManagementView />}
-      {currentView === 'products' && showAddProductModal && (
-        <AddProductModal
-          onClose={() => setShowAddProductModal(false)}
-          onSubmit={handleAddProduct}
+      {currentView === 'products' && showProductModal && (
+        <ProductModal
+          key={editingProduct?.id || 'new'} 
+          initialValues={editingProduct}
+          onClose={() => setShowProductModal(false)}
+          onSubmit={saveProduct}
         />
       )}
     </div>
   );
 };
 
-const AddProductModal = ({ onClose, onSubmit }) => {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [termsInput, setTermsInput] = useState(''); // one term per line
-  const [description, setDescription] = useState('');
+const ProductModal = ({ initialValues, onClose, onSubmit }) => {
+  const isEdit = !!initialValues;
+
+  const [name, setName] = useState(initialValues?.name || '');
+  const [price, setPrice] = useState(
+    initialValues?.price !== undefined ? String(initialValues.price) : ''
+  );
+  const [termsInput, setTermsInput] = useState(
+    initialValues?.terms?.join('\n') || ''
+  );
+  const [description, setDescription] = useState(initialValues?.description || '');
   const [errors, setErrors] = useState({});
   const dialogRef = useRef(null);
 
   useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const onKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKeyDown);
     dialogRef.current?.querySelector('input, textarea, button')?.focus();
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
+
+  // If the product to edit changes while modal is open, refresh fields
+  useEffect(() => {
+    setName(initialValues?.name || '');
+    setPrice(initialValues?.price !== undefined ? String(initialValues.price) : '');
+    setTermsInput(initialValues?.terms?.join('\n') || '');
+    setDescription(initialValues?.description || '');
+  }, [initialValues]);
 
   const validate = () => {
     const e = {};
@@ -232,7 +267,6 @@ const AddProductModal = ({ onClose, onSubmit }) => {
     if (price === '' || Number.isNaN(Number(price)) || Number(price) < 0) {
       e.price = 'Enter a valid non-negative price.';
     }
-
     const lines = termsInput.split('\n').map(s => s.trim()).filter(Boolean);
     if (termsInput && lines.length === 0) e.terms = 'Enter at least one term or leave it blank.';
     setErrors(e);
@@ -242,11 +276,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
   const submit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    const terms = termsInput
-      .split('\n')
-      .map(s => s.trim())
-      .filter(Boolean);
-
+    const terms = termsInput.split('\n').map(s => s.trim()).filter(Boolean);
     onSubmit({
       name: name.trim(),
       price: Number(price),
@@ -255,9 +285,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
     });
   };
 
-  const onBackdropClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  const onBackdropClick = (e) => { if (e.target === e.currentTarget) onClose(); };
 
   return (
     <div
@@ -265,11 +293,14 @@ const AddProductModal = ({ onClose, onSubmit }) => {
       onClick={onBackdropClick}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="add-product-title"
+      aria-labelledby="product-modal-title"
       ref={dialogRef}
     >
       <div className="modal-panel">
-        <h2 id="add-product-title" className="modal-title">Add New Product</h2>
+        <h2 id="product-modal-title" className="modal-title">
+          {isEdit ? 'Edit Product' : 'Add New Product'}
+        </h2>
+
         <form onSubmit={submit} className="modal-form">
           <label className="form-label">
             Product Name
@@ -278,7 +309,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Homework Extension"
+              placeholder="e.g., Bronze Membership"
             />
             {errors.name && <div className="form-error">{errors.name}</div>}
           </label>
@@ -298,7 +329,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
           </label>
 
           <label className="form-label">
-            Terms
+            Terms (one per line)
             <textarea
               className="form-textarea"
               value={termsInput}
@@ -309,7 +340,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
           </label>
 
           <label className="form-label">
-            Description
+            Description (optional; supports multiple lines)
             <textarea
               className="form-textarea"
               value={description}
@@ -323,7 +354,7 @@ const AddProductModal = ({ onClose, onSubmit }) => {
               Cancel
             </button>
             <button type="submit" className="btn-primary">
-              Create Product
+              {isEdit ? 'Save Changes' : 'Create Product'}
             </button>
           </div>
         </form>
@@ -331,6 +362,129 @@ const AddProductModal = ({ onClose, onSubmit }) => {
     </div>
   );
 };
+
+// const AddProductModal = ({ onClose, onSubmit }) => {
+//   const [name, setName] = useState('');
+//   const [price, setPrice] = useState('');
+//   const [termsInput, setTermsInput] = useState(''); // one term per line
+//   const [description, setDescription] = useState('');
+//   const [errors, setErrors] = useState({});
+//   const dialogRef = useRef(null);
+
+//   useEffect(() => {
+//     const onKeyDown = (e) => {
+//       if (e.key === 'Escape') onClose();
+//     };
+//     document.addEventListener('keydown', onKeyDown);
+//     dialogRef.current?.querySelector('input, textarea, button')?.focus();
+//     return () => document.removeEventListener('keydown', onKeyDown);
+//   }, [onClose]);
+
+//   const validate = () => {
+//     const e = {};
+//     if (!name.trim()) e.name = 'Product name is required.';
+//     if (price === '' || Number.isNaN(Number(price)) || Number(price) < 0) {
+//       e.price = 'Enter a valid non-negative price.';
+//     }
+
+//     const lines = termsInput.split('\n').map(s => s.trim()).filter(Boolean);
+//     if (termsInput && lines.length === 0) e.terms = 'Enter at least one term or leave it blank.';
+//     setErrors(e);
+//     return Object.keys(e).length === 0;
+//   };
+
+//   const submit = (e) => {
+//     e.preventDefault();
+//     if (!validate()) return;
+//     const terms = termsInput
+//       .split('\n')
+//       .map(s => s.trim())
+//       .filter(Boolean);
+
+//     onSubmit({
+//       name: name.trim(),
+//       price: Number(price),
+//       description: description.trim(),
+//       terms
+//     });
+//   };
+
+//   const onBackdropClick = (e) => {
+//     if (e.target === e.currentTarget) onClose();
+//   };
+
+//   return (
+//     <div
+//       className="modal-backdrop"
+//       onClick={onBackdropClick}
+//       role="dialog"
+//       aria-modal="true"
+//       aria-labelledby="add-product-title"
+//       ref={dialogRef}
+//     >
+//       <div className="modal-panel">
+//         <h2 id="add-product-title" className="modal-title">Add New Product</h2>
+//         <form onSubmit={submit} className="modal-form">
+//           <label className="form-label">
+//             Product Name
+//             <input
+//               type="text"
+//               className="form-input"
+//               value={name}
+//               onChange={(e) => setName(e.target.value)}
+//               placeholder="e.g., Homework Extension"
+//             />
+//             {errors.name && <div className="form-error">{errors.name}</div>}
+//           </label>
+
+//           <label className="form-label">
+//             Price (Coins)
+//             <input
+//               type="number"
+//               min="0"
+//               step="1"
+//               className="form-input"
+//               value={price}
+//               onChange={(e) => setPrice(e.target.value)}
+//               placeholder="e.g., 100"
+//             />
+//             {errors.price && <div className="form-error">{errors.price}</div>}
+//           </label>
+
+//           <label className="form-label">
+//             Terms
+//             <textarea
+//               className="form-textarea"
+//               value={termsInput}
+//               onChange={(e) => setTermsInput(e.target.value)}
+//               rows={4}
+//             />
+//             {errors.terms && <div className="form-error">{errors.terms}</div>}
+//           </label>
+
+//           <label className="form-label">
+//             Description
+//             <textarea
+//               className="form-textarea"
+//               value={description}
+//               onChange={(e) => setDescription(e.target.value)}
+//               rows={4}
+//             />
+//           </label>
+
+//           <div className="modal-actions">
+//             <button type="button" className="btn-secondary" onClick={onClose}>
+//               Cancel
+//             </button>
+//             <button type="submit" className="btn-primary">
+//               Create Product
+//             </button>
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
 
 export default InstructorPortal;
 
