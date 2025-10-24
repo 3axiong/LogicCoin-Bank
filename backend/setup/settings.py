@@ -84,27 +84,16 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-if os.getenv("DB_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER", "postgres"),
-            "PASSWORD": os.getenv("DB_PASSWORD", "logiccoin"),
-            "HOST": os.getenv("DB_HOST", "localhost"),
-            "PORT": os.getenv("DB_PORT", "5432"),
-            "OPTIONS": {
-                "sslmode": "disable",          
-            },
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "logiccoin"),
+        "USER": os.environ.get("DB_USER", "logiccoin_user"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
