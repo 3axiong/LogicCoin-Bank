@@ -135,12 +135,6 @@ const InstructorPortal = () => {
           Students' List
         </button>
       </div>
-      <div className="page-indicators">
-        <div className="indicator active"></div>
-        <div className="indicator"></div>
-        <div className="indicator"></div>
-        <div className="indicator"></div>
-      </div>
     </div>
   );
 
@@ -162,12 +156,6 @@ const InstructorPortal = () => {
             </button>
           </div>
         ))}
-      </div>
-      <div className="page-indicators">
-        <div className="indicator"></div>
-        <div className="indicator active"></div>
-        <div className="indicator"></div>
-        <div className="indicator"></div>
       </div>
     </div>
   );
@@ -217,12 +205,6 @@ const InstructorPortal = () => {
             </div>
           ))}
         </div>
-        <div className="page-indicators">
-          <div className="indicator"></div>
-          <div className="indicator"></div>
-          <div className="indicator active"></div>
-          <div className="indicator"></div>
-        </div>
       </div>
     );
   };
@@ -268,12 +250,6 @@ const InstructorPortal = () => {
           Refund
         </button>
         </div>
-        <div className="page-indicators">
-          <div className="indicator"></div>
-          <div className="indicator"></div>
-          <div className="indicator"></div>
-          <div className="indicator active"></div>
-        </div>
       </div>
     </div>
   );
@@ -301,12 +277,6 @@ const InstructorPortal = () => {
             <div className="product-price">{product.price} Coins</div>
             <button className="purchase-button"
             onClick={() => openEditModal(product)}>Edit Product</button>
-            <div className="page-indicators">
-              <div className="indicator"></div>
-              <div className="indicator"></div>
-              <div className="indicator active"></div>
-              <div className="indicator"></div>
-            </div>
           </div>
         ))}
       </div>
