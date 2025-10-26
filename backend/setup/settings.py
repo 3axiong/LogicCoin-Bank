@@ -87,11 +87,14 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "logiccoin"),
-        "USER": os.environ.get("DB_USER", "logiccoin_user"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "NAME": os.environ.get("DB_NAME", "railway"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "pKQdQqXgNPpGzZXKsPuWQkcSGrFaQiyx"),
+        "HOST": os.environ.get("DB_HOST", "yamabiko.proxy.rlwy.net"),
+        "PORT": os.environ.get("DB_PORT", "42017"),
+        'OPTIONS': {
+            'sslmode': 'require',       # **important for Railway**
+        },
     }
 }
 

@@ -101,7 +101,7 @@ def login(request):
 #Excepts POST requests to obtain coin balance of a student
 @csrf_exempt
 def coinbalance(request):
-	if request.method != 'GET':
+    if request.method != 'GET':
         return JsonResponse({'error': 'GET only'}, status=405)
     email = request.GET.get('email')
     if not email:
@@ -114,7 +114,7 @@ def coinbalance(request):
 #Excepts POST requests to award coins to a student
 @csrf_exempt
 def awardCoins(request):
-	if request.method != 'POST':
+    if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
     try:
         data = json.loads(request.body.decode('utf-8'))
