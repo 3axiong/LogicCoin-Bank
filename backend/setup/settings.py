@@ -84,6 +84,31 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+'''
+Added dummy student by doing:
+
+$ python manage.py shell
+7 objects imported automatically (use -v 2 for details).
+
+Ctrl click to launch VS Code Native REPL
+Python 3.13.5 (tags/v3.13.5:6cb20a2, Jun 11 2025, 16:15:46) [MSC v.1943 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from api.models import Student
+>>> from django.contrib.auth.hashers import make_password
+>>>
+>>> Student.objects.create(
+...     email="test@example.com",
+...     name="Test User",
+...     password=make_password("mypassword"),
+...     available_coins=100
+... )
+<Student: test@example.com (100 coins)>
+>>> Student.objects.all().values('email', 'password')
+<QuerySet [{'email': 'test@example.com', 'password': 'pbkdf2_sha256$1000000$NvMF5NSD7WKl9L9KSDcZ5h$lRoRFIeHWSRdGciTKK+f7nR4miZnLSsCwxKuUjvnvys='}]>
+>>> exit()
+now exiting InteractiveConsole...
+'''
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -92,9 +117,6 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", "pKQdQqXgNPpGzZXKsPuWQkcSGrFaQiyx"),
         "HOST": os.environ.get("DB_HOST", "yamabiko.proxy.rlwy.net"),
         "PORT": os.environ.get("DB_PORT", "42017"),
-        'OPTIONS': {
-            'sslmode': 'require',       # **important for Railway**
-        },
     }
 }
 
