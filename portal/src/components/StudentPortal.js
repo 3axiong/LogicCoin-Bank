@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { students, products, activities } from '../data/mockData';
 
-import React, { useState } from 'react';
-import { students, products, activities } from '../data/mockData';
-
 export default function StudentPortal({ user, onBack, onLogout }) {
   const initialStudent = user
     ? {
