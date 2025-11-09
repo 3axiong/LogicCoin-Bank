@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { instructors } from '../data/mockData';
 
 
@@ -7,16 +7,21 @@ const InstructorPortal = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
-  const [products, setProducts] = useState(productsSeed);
+  const [products, setProducts] = useState([]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [activityList, setActivityList] = useState(activities);
+  const [activityList, setActivityList] = useState([]);
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [editingTxn, setEditingTxn] = useState(null);
-  const [studentList, setStudentList] = useState(students);
+  const [studentList, setStudentList] = useState([]);
   const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
   const [alert, setAlert] = useState({ open: false, message: '' });
 
+  const fetchJson = async (url, options) => {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return res.json();
+  };
   const showAlert = (message) => setAlert({ open: true, message });
   const closeAlert = () => setAlert({ open: false, message: '' });
 
@@ -284,6 +289,29 @@ const InstructorPortal = () => {
       </div>
     </div>
   );
+  // Load Students
+  useEffect(() => {
+    if (currentView !== 'students') return;
+    fetchJson('/students/')
+      .then(setStudentList)
+      .catch(() => showAlert('Failed to load students.'));
+  }, [currentView]);
+
+  // Load Products
+  useEffect(() => {
+    if (currentView !== 'products') return;
+    fetchJson('/products/')
+      .then(setProducts)
+      .catch(() => showAlert('Failed to load products.'));
+  }, [currentView]);
+
+  // Load Activities
+  useEffect(() => {
+    if (currentView !== 'studentActivities' || !selectedStudent?.id) return;
+    fetchJson(`/students/${selectedStudent.id}/activities/`)
+      .then(setActivityList)
+      .catch(() => showAlert('Failed to load activities.'));
+  }, [currentView, selectedStudent?.id]);
 
   return (
     <div className="app">
