@@ -58,7 +58,8 @@ function App() {
             </button>
             <button 
               className="cta-button" 
-              onClick={() => { setRole('instructor'); setView('login'); }}
+              // onClick={() => { setRole('instructor'); setView('login'); }}
+              onClick={() => { setRole('instructor'); setView('instructor'); }}
             >
               Instructor Portal
             </button>

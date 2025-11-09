@@ -16,6 +16,8 @@ const InstructorPortal = () => {
   const [studentList, setStudentList] = useState([]);
   const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
   const [alert, setAlert] = useState({ open: false, message: '' });
+  
+  const API_BASE = 'http://127.0.0.1:8000';
 
   const fetchJson = async (url, options) => {
     const res = await fetch(url, options);
