@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 import json
 from django.contrib.auth.hashers import make_password, check_password
 
-from .models import Student
+from .models import Student, Product, Purchase 
 
 '''
 You must run the backend in a virtual environment to ensure that the dependencies are properly managed and isolated from your global Python installation.
@@ -92,11 +93,11 @@ def login(request):
         'available_coins': user.available_coins,
     }, status=200)
 	
-'''def _json_request(request):
+def _json_request(request):
 	try:
 		return json.loads(request.body.decode('utf-8'))
 	except Exception:
-		return {}'''
+		return {}
 
 #Excepts POST requests to obtain coin balance of a student
 @csrf_exempt
@@ -160,6 +161,7 @@ def transaction(request):
 
 	return JsonResponse({'message': 'Transaction successful', 'available_coins': student.available_coins})
 
+
 # Possible future routes for user register/login
 '''
 @csrf_exempt
@@ -204,3 +206,49 @@ def login(request):
 	else:
 		return JsonResponse({'message': 'wrong password'}, status=400)
 '''
+
+def _student_json(s: Student):
+    return {
+        "id": s.id,
+        "name": s.name,
+        "balance": s.balance,  # maps to available_coins 
+    }
+
+def _product_json(p: Product):
+    return {
+        "id": p.id,
+        "name": p.name,
+        "price": p.price,
+        "description": p.description or "",
+        "terms": p.terms or [],  # JSONField on Product
+    }
+
+def _activity_json(x: Purchase):
+    return {
+        "id": x.id,
+        "studentId": x.student_id,
+        "product": x.product_name,      
+        "date": x.date.isoformat(),
+        "amount": x.amount,
+        "refunded": x.refunded,
+        "description": x.description or "",
+    }
+
+@require_GET
+def students_list(request):
+    data = [_student_json(s) for s in Student.objects.order_by("name")]
+    return JsonResponse(data, safe=False)
+
+@require_GET
+def products_list(request):
+    data = [_product_json(p) for p in Product.objects.filter(is_active=True).order_by("name")]
+    return JsonResponse(data, safe=False)
+
+@require_GET
+def student_activities(request, student_id: int):
+    # 404 if student doesn't exist
+    if not Student.objects.filter(pk=student_id).exists():
+        raise Http404("Student not found")
+    qs = Purchase.objects.filter(student_id=student_id).order_by("-date")
+    data = [_activity_json(x) for x in qs]
+    return JsonResponse(data, safe=False)

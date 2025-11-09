@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { students, products, activities, instructors } from '../data/mockData';
+import { instructors } from '../data/mockData';
 
 const InstructorPortal = () => {
   const [currentView, setCurrentView] = useState('welcome');
