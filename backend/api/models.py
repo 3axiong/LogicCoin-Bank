@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, identify_hasher
 
 
 # Student model matching the Flask `Student` table in app.py
@@ -13,6 +14,16 @@ class Student(models.Model):
 	# Class and user information
 	email = models.EmailField(max_length=100, unique=True)
 	available_coins = models.IntegerField(default=0)
+     
+	def save(self, *args, **kwargs):
+		if self.password:
+			try:
+                # Will raise an error if password is not already hashed
+				identify_hasher(self.password)
+			except Exception:
+                # If plain text, hash it before saving
+				self.password = make_password(self.password)
+		return super().save(*args, **kwargs)
 	
 	@property
 	def balance(self):

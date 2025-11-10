@@ -1,10 +1,10 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 import json
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 
-from .models import Student, Product, Purchase 
+from .models import Student, Product, Purchase
 
 '''
 You must run the backend in a virtual environment to ensure that the dependencies are properly managed and isolated from your global Python installation.
@@ -35,6 +35,7 @@ $ python manage.py runserver
 '''
 
 # Every route added here must also be added to api/urls.py as a path
+@csrf_exempt
 def register(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
@@ -81,7 +82,17 @@ def login(request):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
-    if not check_password(password, user.password):
+    # Handle both hashed and legacy-plaintext records
+    try:
+        identify_hasher(user.password)        # will raise if not a hash
+        ok = check_password(password, user.password)
+    except Exception:
+        ok = (password == user.password)      # legacy plaintext match
+        if ok:
+            user.password = make_password(password)  # migrate to hashed
+            user.save()
+
+    if not ok:
         return JsonResponse({'error': 'Wrong password'}, status=401)
 
     return JsonResponse({
@@ -98,6 +109,168 @@ def _json_request(request):
 		return json.loads(request.body.decode('utf-8'))
 	except Exception:
 		return {}
+     
+def _parse_json(request):
+    try:
+        return json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return {}
+    
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_product(request):
+    data = _parse_json(request)
+    name = (data.get("name") or "").strip()
+    price = data.get("price")
+    description = (data.get("description") or "").strip()
+    terms = data.get("terms") or []
+
+    if not name or price is None or int(price) < 0:
+        return JsonResponse({"error": "name and non-negative price required"}, status=400)
+
+    from .models import Product
+    p = Product.objects.create(
+        name=name,
+        price=int(price),
+        description=description,
+        terms=terms,
+        is_active=True,
+    )
+    return JsonResponse({
+        "id": p.id, "name": p.name, "price": p.price,
+        "description": p.description or "", "terms": p.terms or []
+    }, status=201)
+
+@csrf_exempt
+@require_http_methods(["PATCH", "PUT"])
+def update_product(request, product_id: int):
+    from .models import Product
+    try:
+        p = Product.objects.get(pk=product_id)
+    except Product.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+    data = _parse_json(request)
+    if "name" in data: p.name = (data["name"] or "").strip()
+    if "price" in data:
+        try:
+            val = int(data["price"])
+            if val < 0: raise ValueError()
+            p.price = val
+        except Exception:
+            return JsonResponse({"error": "price must be non-negative int"}, status=400)
+    if "description" in data: p.description = (data["description"] or "").strip()
+    if "terms" in data: p.terms = data["terms"] or []
+    if "is_active" in data: p.is_active = bool(data["is_active"])
+    p.save()
+
+    return JsonResponse({
+        "id": p.id, "name": p.name, "price": p.price,
+        "description": p.description or "", "terms": p.terms or [], "is_active": p.is_active
+    })
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_purchase(request):
+    from .models import Student, Product, Purchase
+    data = _parse_json(request)
+    student_id = data.get("studentId")
+    product_id = data.get("productId")
+    quantity = int(data.get("quantity", 1))
+    description = (data.get("description") or "").strip()
+
+    if not student_id or not product_id or quantity <= 0:
+        return JsonResponse({"error": "studentId, productId, quantity>0 required"}, status=400)
+
+    try:
+        s = Student.objects.get(pk=student_id)
+        p = Product.objects.get(pk=product_id)
+    except (Student.DoesNotExist, Product.DoesNotExist):
+        return JsonResponse({"error": "student or product not found"}, status=404)
+
+    total = p.price * quantity
+    if s.available_coins < total:
+        return JsonResponse({"error": "insufficient balance", "balance": s.available_coins}, status=400)
+
+    # deduct balance
+    s.available_coins -= total
+    s.save()
+
+    x = Purchase.objects.create(
+        student=s,
+        product=p,
+        product_name=p.name,
+        unit_price_at_purchase=p.price,
+        quantity=quantity,
+        amount=total,
+        description=description,
+    )
+
+    return JsonResponse({
+        "id": x.id,
+        "studentId": x.student_id,
+        "product": x.product_name,
+        "date": x.date.isoformat(),
+        "amount": x.amount,
+        "refunded": x.refunded,
+        "description": x.description or "",
+        "balance": s.available_coins,  # updated balance for UI
+    }, status=201)
+@csrf_exempt
+@require_http_methods(["PATCH", "PUT"])
+def update_purchase(request, purchase_id: int):
+    from .models import Purchase, Student
+    try:
+        x = Purchase.objects.select_related("student").get(pk=purchase_id)
+    except Purchase.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+    data = _parse_json(request)
+
+    # Refund
+    if data.get("refund") is True and not x.refunded:
+        x.refunded = True
+        # return amount to student
+        s = x.student
+        s.available_coins += x.amount
+        s.save()
+        x.save()
+        return JsonResponse({
+            "id": x.id, "refunded": True, "amount": x.amount,
+            "studentId": x.student_id, "product": x.product_name,
+            "date": x.date.isoformat(), "description": x.description or "",
+            "balance": s.available_coins
+        })
+
+    # Edit amount (adjust student balance for delta, if not refunded)
+    if "amount" in data:
+        try:
+            new_amt = int(data["amount"])
+            if new_amt < 0: raise ValueError()
+        except Exception:
+            return JsonResponse({"error": "amount must be non-negative int"}, status=400)
+
+        if x.refunded:
+            return JsonResponse({"error": "cannot edit a refunded purchase"}, status=400)
+
+        delta = x.amount - new_amt  # positive delta → give back coins
+        s = x.student
+        # Apply delta (ensure no negative balance violation)
+        if delta < 0 and s.available_coins < abs(delta):
+            return JsonResponse({"error": "insufficient balance to increase amount", "balance": s.available_coins}, status=400)
+        s.available_coins += delta
+        s.save()
+
+        x.amount = new_amt
+        x.save()
+
+        return JsonResponse({
+            "id": x.id, "refunded": x.refunded, "amount": x.amount,
+            "studentId": x.student_id, "product": x.product_name,
+            "date": x.date.isoformat(), "description": x.description or "",
+            "balance": s.available_coins
+        })
+
+    return JsonResponse({"error": "nothing to update"}, status=400)
 
 #Excepts POST requests to obtain coin balance of a student
 @csrf_exempt

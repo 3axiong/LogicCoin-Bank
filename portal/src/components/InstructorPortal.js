@@ -18,6 +18,7 @@ const InstructorPortal = () => {
   const [alert, setAlert] = useState({ open: false, message: '' });
   
   const API_BASE = 'http://127.0.0.1:8000';
+  const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
 
   const fetchJson = async (url, options) => {
     const res = await fetch(url, options);
@@ -49,53 +50,46 @@ const InstructorPortal = () => {
     );
   };
 
-  const saveTransaction = ({ amount }) => {
+  const saveTransaction = async ({ amount }) => {
     if (!editingTxn) return;
-
-    const id = editingTxn.id;
-    const oldAmount = Number(editingTxn.amount);
-    const newAmount = Number(amount);
-    const delta = oldAmount - newAmount;
-
-    setActivityList(prev =>
-      prev.map(a => (a.id === id ? { ...a, amount: newAmount } : a))
-    );
-
-    if (selectedActivity?.id === id) {
-      setSelectedActivity(prev => (prev ? { ...prev, amount: newAmount } : prev));
+    try {
+      const updated = await fetchJson(`/purchases/${editingTxn.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: Number(amount) }),
+      });
+      setActivityList(prev => prev.map(a => (a.id === updated.id ? { ...a, amount: updated.amount } : a)));
+      setSelectedStudent(s => s ? { ...s, balance: updated.balance } : s);
+      setStudentList(prev => prev.map(st => st.id === updated.studentId ? { ...st, balance: updated.balance } : st));
+      setShowTxnModal(false);
+      setEditingTxn(null);
+      setCurrentView('studentActivities');
+    } catch (e) {
+      showAlert('Failed to update transaction.');
     }
-
-    if (!editingTxn.refunded) {
-      adjustStudentBalance(editingTxn.studentId, delta);
-    }
-
-    setShowTxnModal(false);
-    setEditingTxn(null);
-    setCurrentView('studentActivities');
   };
 
-  const refundTransaction = (activity) => {
+
+  const refundTransaction = async (activity) => {
     const act = activity ?? editingTxn;
-    if (!act) return;
-    if (act.refunded) return; 
-
-    const { id, studentId } = act;
-    const refundAmount = Number(act.amount) || 0;
-
-    setActivityList(prev =>
-      prev.map(a => (a.id === id ? { ...a, refunded: true } : a))
-    );
-
-    if (selectedActivity?.id === id) {
-      setSelectedActivity(prev => (prev ? { ...prev, refunded: true } : prev));
+    if (!act || act.refunded) return;
+    try {
+      const updated = await fetchJson(`/purchases/${act.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refund: true }),
+      });
+      setActivityList(prev => prev.map(a => (a.id === updated.id ? { ...a, refunded: true } : a)));
+      setSelectedStudent(s => s ? { ...s, balance: updated.balance } : s);
+      setStudentList(prev => prev.map(st => st.id === updated.studentId ? { ...st, balance: updated.balance } : st));
+      setShowTxnModal(false);
+      setEditingTxn(null);
+      setCurrentView('studentActivities');
+    } catch (e) {
+      showAlert('Failed to refund transaction.');
     }
-
-    adjustStudentBalance(studentId, refundAmount);
-
-    setShowTxnModal(false);
-    setEditingTxn(null);
-    setCurrentView('studentActivities');
   };
+
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -107,18 +101,31 @@ const InstructorPortal = () => {
     setShowProductModal(true);
   };
 
-  const saveProduct = (data) => {
-    if (editingProduct) {
-      // edit existing
-      setProducts(prev =>
-        prev.map(p => (p.id === editingProduct.id ? { ...p, ...data } : p))
-      );
-    } else {
-      // create new
-      setProducts(prev => [{ id: `p_${Date.now()}`, ...data }, ...prev]);
+  const saveProduct = async (data) => {
+    try {
+      if (editingProduct?.id) {
+        // update
+        const updated = await fetchJson(`/products/${editingProduct.id}/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        setProducts(prev => prev.map(p => (p.id === editingProduct.id ? updated : p)));
+      } else {
+        // create
+        const created = await fetchJson(`/products/create/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        setProducts(prev => [created, ...prev]);
+      }
+      setShowProductModal(false);
+    } catch (e) {
+      showAlert('Failed to save product.');
     }
-    setShowProductModal(false);
   };
+
   
 
   const WelcomeView = () => (
@@ -157,6 +164,7 @@ const InstructorPortal = () => {
               className="view-activities-button"
               onClick={() => {
                 setSelectedStudent(student);
+                setActivityList([]);
                 setCurrentView('studentActivities');
               }}
             >
@@ -284,8 +292,12 @@ const InstructorPortal = () => {
               ))}
             </div>
             <div className="product-price">{product.price} Coins</div>
-            <button className="purchase-button"
-            onClick={() => openEditModal(product)}>Edit Product</button>
+            <button
+              className="purchase-button"
+              onClick={() => openEditModal(product)}
+            >
+              Edit Product
+            </button>
           </div>
         ))}
       </div>
