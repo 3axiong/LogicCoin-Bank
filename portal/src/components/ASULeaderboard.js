@@ -56,7 +56,7 @@ export default function ASULeaderboard() {
               fontWeight: 900,
               opacity: 1,
               filter: "none",
-              margin: 0
+              margin: 0,
               textShadow: "0 0 0 #000"
             }}>
               LogicCoin Leaderboard
