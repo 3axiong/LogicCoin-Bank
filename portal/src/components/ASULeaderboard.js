@@ -8,60 +8,37 @@ export default function ASULeaderboard() {
     light: "#F7F7F7",
   };
 
-  // demo data 
+  
   const data = [
-    { id: 1, name: "Alexa Quijano", coins: 240 },
-    { id: 2, name: "Ethan Xiong", coins: 220 },
-    { id: 3, name: "Zachary Jeantete", coins: 205 },
-    { id: 4, name: "Yosef Ossowiecki", coins: 198 },
-    { id: 5, name: "Someone1", coins: 182 },
-    { id: 6, name: "Someone2", coins: 171 },
-    { id: 7, name: "Someone3", coins: 160 },
-    { id: 8, name: "Someone4", coins: 158 },
+    { id: 1, name: "Alexa Quijano", coins: 240, section: "EEE120-001" },
+    { id: 2, name: "Ethan Xiong", coins: 220, section: "EEE120-002" },
+    { id: 3, name: "Zachary Jeantete", coins: 205, section: "EEE120-001" },
+    { id: 4, name: "Yosef Ossowiecki", coins: 198, section: "EEE120-003" },
+    { id: 5, name: "Alicia Baumman", coins: 190, section: "EEE120-002" },
+    { id: 6, name: "Olga Example", coins: 172, section: "EEE120-001" },
+    { id: 7, name: "Student Seven", coins: 165, section: "EEE120-003" },
+    { id: 8, name: "Student Eight", coins: 160, section: "EEE120-002" },
+    { id: 9, name: "Student Nine", coins: 158, section: "EEE120-001" },
+    { id: 10, name: "Student Ten", coins: 154, section: "EEE120-003" },
   ];
 
-  const sorted = [...data].sort((a, b) => b.coins - a.coins);
+  const [sectionFilter, setSectionFilter] = useState("ALL");
 
-  return (
-    <section className="lb-wrap" aria-labelledby="lb-title">
-      <div className="lb-card">
-        <div className="lb-head">
-          <h2 id="lb-title" className="lb-title">Leaderboard</h2>
-        </div>
+  const sections = useMemo(() => {
+    const set = new Set(data.map(s => s.section).filter(Boolean));
+    return ["ALL", ...Array.from(set).sort()];
+  }, []);
 
-        {/* Top 3 */}
-        <div className="lb-podium">
-          {sorted.slice(0, 3).map((p, i) => (
-            <div key={p.id} className={`lb-podium-card ${i === 0 ? "lb-gold" : "lb-maroon"}`}>
-              <div className="lb-rank-badge">{i + 1}</div>
-              <div className="lb-name">{p.name}</div>
-              <div className="lb-coins">{p.coins}<span className="lb-suffix"> Coins</span></div>
-            </div>
-          ))}
-        </div>
+  const filtered = useMemo(() => {
+    const arr = sectionFilter === "ALL"
+      ? data.slice()
+      : data.filter(s => s.section === sectionFilter);
 
-        {/* Full table */}
-        <div className="lb-table-scroller">
-          <table className="lb-table">
-            <thead>
-              <tr>
-                <th>Rank</th><th>Student</th><th>Coins</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((s, idx) => (
-                <tr key={s.id}>
-                  <td className={`lb-rank ${idx < 3 ? "lb-top" : ""}`}>{idx + 1}</td>
-                  <td>{s.name}</td>
-                  <td className="lb-coins-cell">
-                    <strong>{s.coins}</strong> <span className="lb-suffix">Coins</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
-}
+    arr.sort((a, b) => b.coins - a.coins);
+    return arr;
+  }, [data, sectionFilter]);
+
+  const top3 = filtered.slice(0, 3);
+  const rest = filtered.slice(3);
+
+  
