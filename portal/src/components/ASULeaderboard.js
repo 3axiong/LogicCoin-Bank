@@ -52,7 +52,7 @@ export default function ASULeaderboard() {
         <div className="lb-head" style={{ borderBottomColor: ASU.maroon }}>
           <div className="lb-title">
             <h1 style={{
-              color: ASU.maroon !important`,
+              color: `${ASU.maroon} !important`,
               fontWeight: 900,
               opacity: 1,
               filter: "none",
