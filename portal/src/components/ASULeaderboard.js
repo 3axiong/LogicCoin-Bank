@@ -8,6 +8,12 @@ export default function ASULeaderboard() {
     light: "#F7F7F7",
   };
 
+  const METALS = {
+    gold: "#FFC627",
+    silver: "#C0C0C0",
+    bronze: "#CD7F32",
+  };
+
   
   const data = [
     { id: 1, name: "Alexa Quijano", coins: 240, section: "EEE120-001" },
@@ -45,7 +51,15 @@ export default function ASULeaderboard() {
       <div className="lb-card" style={{ borderColor: ASU.maroon }}>
         <div className="lb-head" style={{ borderBottomColor: ASU.maroon }}>
           <div className="lb-title">
-            <h1 style={{ color: ASU.maroon }}>LogicCoin Leaderboard</h1>
+            <h1 style={{
+              color: ASU.maroon,
+              fontWeight: 900,
+              opacity: 1,
+              filter: "none",
+              margin: 0
+            }}>
+              LogicCoin Leaderboard
+            </h1>
           </div>
 
           <div className="lb-filter">
@@ -65,34 +79,52 @@ export default function ASULeaderboard() {
         </div>
 
         <div className="lb-podium">
-          {top3.map((s, i) => (
-            <div className="lb-podium-card" key={s.id}>
+          {top3.map((s, i) => {
+            const bg =
+              i === 0 ? METALS.gold :
+              i === 1 ? METALS.silver :
+              METALS.bronze;
+
+            const textColor = i === 2 ? "#FFFFFF" : ASU.dark; 
+
+            return (
               <div
-                className="lb-rank-badge"
+                className="lb-podium-card"
+                key={s.id}
                 style={{
-                  background: i === 0 ? ASU.gold : ASU.maroon,
-                  color: i === 0 ? ASU.dark : "white",
+                  background: bg,
+                  color: textColor,
+                  border: "2px solid rgba(0,0,0,0.08)",
                 }}
               >
-                #{i + 1}
-              </div>
+                <div
+                  className="lb-rank-badge"
+                  style={{
+                    background: ASU.dark,
+                    color: "#fff",
+                    border: "2px solid #00000022",
+                  }}
+                >
+                  #{i + 1}
+                </div>
 
-              <div
-                className="lb-name"
-                style={{ color: ASU.dark, fontWeight: 700 }}
-              >
-                {s.name}
-              </div>
+                <div
+                  className="lb-name"
+                  style={{ color: textColor, fontWeight: 800 }}
+                >
+                  {s.name}
+                </div>
 
-              <div className="lb-coins" style={{ color: ASU.maroon }}>
-                <strong>{s.coins}</strong> <span className="lb-suffix">Coins</span>
-              </div>
+                <div className="lb-coins" style={{ color: textColor }}>
+                  <strong>{s.coins}</strong> <span className="lb-suffix">Coins</span>
+                </div>
 
-              <div className="lb-section" style={{ fontSize: "12px", opacity: ".7" }}>
-                {s.section}
+                <div className="lb-section" style={{ fontSize: "12px", opacity: 0.9, color: textColor }}>
+                  {s.section}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="lb-table-scroller">
@@ -131,10 +163,35 @@ export default function ASULeaderboard() {
           background: #fff;
           font-weight: 600;
         }
-        /* ensure podium name remains visible even if other styles exist */
-        .lb-podium-card .lb-name { color: ${ASU.dark}; }
+        .lb-podium {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          padding: 20px 24px;
+        }
+        .lb-podium-card {
+          position: relative;
+          border-radius: 12px;
+          padding: 16px;
+          text-align: center;
+        }
+        .lb-rank-badge {
+          position: absolute;
+          top: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-weight: 900;
+          font-size: 12px;
+        }
+        .lb-name { margin-top: 10px; font-size: 16px; }
+        .lb-coins { margin-top: 6px; font-size: 20px; font-weight: 800; }
+        .lb-section { margin-top: 2px; }
+        @media (max-width: 720px) {
+          .lb-podium { grid-template-columns: 1fr; }
+        }
       `}</style>
     </section>
   );
 }
-  
