@@ -33,7 +33,6 @@ export default function ASULeaderboard() {
     const arr = sectionFilter === "ALL"
       ? data.slice()
       : data.filter(s => s.section === sectionFilter);
-
     arr.sort((a, b) => b.coins - a.coins);
     return arr;
   }, [data, sectionFilter]);
@@ -47,7 +46,6 @@ export default function ASULeaderboard() {
         <div className="lb-head" style={{ borderBottomColor: ASU.maroon }}>
           <div className="lb-title">
             <h1 style={{ color: ASU.maroon }}>LogicCoin Leaderboard</h1>
-            <p>Track the top students by coin balance</p>
           </div>
 
           <div className="lb-filter">
@@ -78,10 +76,18 @@ export default function ASULeaderboard() {
               >
                 #{i + 1}
               </div>
-              <div className="lb-name">{s.name}</div>
+
+              <div
+                className="lb-name"
+                style={{ color: ASU.dark, fontWeight: 700 }}
+              >
+                {s.name}
+              </div>
+
               <div className="lb-coins" style={{ color: ASU.maroon }}>
                 <strong>{s.coins}</strong> <span className="lb-suffix">Coins</span>
               </div>
+
               <div className="lb-section" style={{ fontSize: "12px", opacity: ".7" }}>
                 {s.section}
               </div>
@@ -125,6 +131,8 @@ export default function ASULeaderboard() {
           background: #fff;
           font-weight: 600;
         }
+        /* ensure podium name remains visible even if other styles exist */
+        .lb-podium-card .lb-name { color: ${ASU.dark}; }
       `}</style>
     </section>
   );
