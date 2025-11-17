@@ -2,11 +2,37 @@ import React, { useState } from 'react';
 import './App.css';
 import StudentPortal from './components/StudentPortal';
 import InstructorPortal from './components/InstructorPortal';
+import ASULeaderboard from "./components/ASULeaderboard";
+import LoginScreen from "./components/LoginScreen";
 
 function App() {
-  const [userType, setUserType] = useState(null); // 'student' or 'instructor'
+  const [view, setView] = useState('home');
+  const [role, setRole] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const LoginView = () => (
+  if (view === 'student') return (
+    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+  );
+
+  if (view === 'instructor') return (
+    <InstructorPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+  );
+
+
+  if (view === 'login') {
+    return (
+      <LoginScreen
+        role={role}
+        onBack={() => setView('home')}
+        onLogin={(data) => {
+          setCurrentUser(data);            
+          setView(data.role);              
+        }}
+      />
+    );
+  }
+
+  return (
     <div className="app">
       <div className="main-content">
         <div className="left-section">
@@ -26,31 +52,22 @@ function App() {
           <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
             <button 
               className="cta-button" 
-              onClick={() => setUserType('student')}
+              onClick={() => { setRole('student'); setView('login'); }}
             >
               Student Portal
             </button>
             <button 
               className="cta-button" 
-              onClick={() => setUserType('instructor')}
+              onClick={() => { setRole('instructor'); setView('login'); }}
             >
-              Faculty Portal
+              Instructor Portal
             </button>
           </div>
         </div>
       </div>
+      <ASULeaderboard />
     </div>
   );
-
-  if (userType === 'student') {
-    return <StudentPortal />;
-  }
-  
-  if (userType === 'instructor') {
-    return <InstructorPortal />;
-  }
-
-  return <LoginView />;
 }
 
 export default App;
