@@ -10,7 +10,7 @@ export const students = [
 export const products = [
   {
     id: 1,
-    name: "Cheet Sheet on Exam",
+    name: "Cheat Sheet on Exam",
     description: "1 paper, 2 sides\nYou choose which exam to use\nRefundable",
     price: 140,
     terms: ["Term 01", "Term 02", "Term 03"]
@@ -37,9 +37,9 @@ export const activities = [
     studentId: 1,
     studentName: "Bob",
     type: "Purchase",
-    product: "Exam Cheet Sheet",
+    product: "Cheat Sheet on Exam",
     date: "05/02/2025",
-    amount: 150,
+    amount: 140,
     description: "Purchase 01"
   },
   {
