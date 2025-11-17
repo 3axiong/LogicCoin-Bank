@@ -8,6 +8,8 @@ const InstructorPortal = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
   const [products, setProducts] = useState(productsSeed);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productFilter, setProductFilter] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [activityList, setActivityList] = useState(activities);
@@ -112,6 +114,25 @@ const InstructorPortal = () => {
     }
     setShowProductModal(false);
   };
+
+  // Return unique purchasers (student summary) for a product by matching activity.product name
+  const purchasersFor = (product) => {
+    if (!product) return [];
+    const pname = (product.name || '').toLowerCase();
+    const matches = activityList.filter(a => (a.product || '').toLowerCase().includes(pname));
+
+    const byStudent = {};
+    matches.forEach(a => {
+      const sid = a.studentId;
+      if (!byStudent[sid]) {
+        byStudent[sid] = { studentId: sid, name: a.studentName || 'Unknown', count: 0, total: 0 };
+      }
+      byStudent[sid].count += 1;
+      byStudent[sid].total += Number(a.amount || 0);
+    });
+
+    return Object.values(byStudent);
+  };
   
 
   const WelcomeView = () => (
@@ -131,9 +152,14 @@ const InstructorPortal = () => {
           Bank Faculty<br />
           Portal
         </h1>
-        <button className="cta-button" onClick={() => setCurrentView('students')}>
-          Students' List
-        </button>
+        <div className="welcome-cta-row">
+          <button className="cta-button" onClick={() => setCurrentView('students')}>
+            Students List
+          </button>
+          <button className="cta-button" onClick={() => setCurrentView('productsList')}>
+            Products List
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -141,7 +167,7 @@ const InstructorPortal = () => {
   const StudentsView = () => (
     <div className="students-container">
       <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
-      <h1 className="page-title">Students' List</h1>
+      <h1 className="page-title">Students List</h1>
       <div className="students-table">
         {studentList.map(student => (
           <div key={student.id} className="student-row">
@@ -255,6 +281,84 @@ const InstructorPortal = () => {
     </div>
   );
 
+  const ProductsListView = () => {
+    // Treat productFilter as selected product id when using dropdown; empty => show all
+    const filteredProducts = products.filter(p => !productFilter || String(p.id) === String(productFilter));
+
+    
+    return (
+      <div className="students-container">
+        <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
+        <h1 className="page-title">Products List</h1>
+
+        <div className="filter-row">
+          <label className="form-label">
+              <select
+                className="form-input filter-select"
+                value={productFilter}
+                onChange={(e) => {
+                  setProductFilter(e.target.value);
+                }}
+              >
+              <option value="">All products</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="students-table">
+          {filteredProducts.map(p => (
+            <div key={p.id} className="student-row">
+              <div className="student-name">{p.name} <span className="balance-highlight">{p.price} coins</span></div>
+              <button
+                className="view-activities-button"
+                onClick={() => {
+                  // select product in dropdown and open purchasers modal
+                  setProductFilter(String(p.id));
+                  setSelectedProduct(p);
+                }}
+              >
+                View Purchasers
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const PurchasersModal = ({ product, onClose }) => {
+    const list = purchasersFor(product);
+    const onView = (studentId) => {
+      const student = studentList.find(s => s.id === studentId);
+      if (student) setSelectedStudent(student);
+      onClose();
+      setCurrentView('studentActivities');
+    };
+
+    return (
+      <div className="modal-backdrop" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div className="modal-panel">
+          <h2 className="modal-title">Purchasers of "{product.name}"</h2>
+          <div style={{ maxHeight: '50vh', overflow: 'auto' }}>
+            {list.length === 0 && <div className="confirm-message">No purchases found for this product.</div>}
+            {list.map(p => (
+              <div key={p.studentId} className="student-row" style={{ color: '#1e8b5c', background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                <div className="student-name">{p.name} <span style={{ marginLeft: 8, fontSize: 14, color: '#666' }}>({p.count} purchase(s), {p.total} coins)</span></div>
+                <button className="view-activities-button" onClick={() => onView(p.studentId)}>View Activities</button>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button className="btn-secondary" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const ProductsManagementView = () => (
     <div className="products-container">
       <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
@@ -293,6 +397,9 @@ const InstructorPortal = () => {
           <button className="nav-item" onClick={() => setCurrentView('students')}>
             Students List
           </button>
+          <button className="nav-item" onClick={() => setCurrentView('productsList')}>
+            Products List
+          </button>
           <button className="nav-item" onClick={() => setCurrentView('products')}>
             Products Settings
           </button>
@@ -303,7 +410,16 @@ const InstructorPortal = () => {
       {currentView === 'students' && <StudentsView />}
       {currentView === 'studentActivities' && <StudentActivitiesView />}
       {currentView === 'editActivity' && <EditActivityView />}
+      {currentView === 'productsList' && (
+        <ProductsListView />
+      )}
       {currentView === 'products' && <ProductsManagementView />}
+      {selectedProduct && (
+        <PurchasersModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
       {currentView === 'products' && showProductModal && (
         <ProductModal
           key={editingProduct?.id || 'new'} 

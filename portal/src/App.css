@@ -175,6 +175,13 @@ body {
   margin-bottom: 40px;
 }
 
+.welcome-cta-row {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
 /* Center Balance Display */
 .center-balance {
   background: rgba(255, 255, 255, 0.95);
@@ -261,6 +268,40 @@ body {
   padding: 40px;
   position: relative;
   z-index: 10;
+}
+
+/* Filter row styling for Products List */
+.filter-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.filter-row .form-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-weight: 700;
+}
+
+.filter-select {
+  width: 260px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e8b5c;
+  background: #f9fdfb;
+  border: 2px solid rgba(30, 139, 92, 0.30);
+  border-radius: 12px;
+  outline: none;
+}
+
+.filter-select:focus {
+  background: #fff;
+  border-color: #1e8b5c;
+  box-shadow: 0 0 0 4px rgba(30, 139, 92, 0.08);
 }
 
 .page-title {
