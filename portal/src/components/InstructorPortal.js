@@ -394,8 +394,10 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             ← Back to Home
           </button>
         )}
-        <div className="user-info">{currentInstructor.name}</div>
-        <nav className="nav-menu">
+        {currentView === 'welcome' && (
+          <div className="user-info">{currentInstructor.name}</div>
+        )}
+        <nav className="nav-menu" style={{ margin: '0 auto' }}>
           <button className="nav-item" onClick={() => setCurrentView('students')}>
             Students List
           </button>
