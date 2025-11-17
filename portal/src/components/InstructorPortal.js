@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState } from 'react';
 import { students, products as productsSeed, activities, instructors } from '../data/mockData';
 
 
-const InstructorPortal = () => {
+const InstructorPortal = ({ onBack, onLogout }) => {
   const [currentView, setCurrentView] = useState('welcome');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -140,7 +140,7 @@ const InstructorPortal = () => {
       <div className="left-section">
         <div className="logo-section">
           <div className="logo-circle">
-            <div className="logo-text">ASU LOGO</div>
+            <img src="/asu_logo.png" alt="ASU Logo" className="logo-image" />
             <div className="globe-icon">🌐</div>
           </div>
         </div>
@@ -166,7 +166,6 @@ const InstructorPortal = () => {
 
   const StudentsView = () => (
     <div className="students-container">
-      <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
       <h1 className="page-title">Students List</h1>
       <div className="students-table">
         {studentList.map(student => (
@@ -288,7 +287,6 @@ const InstructorPortal = () => {
     
     return (
       <div className="students-container">
-        <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
         <h1 className="page-title">Products List</h1>
 
         <div className="filter-row">
@@ -361,7 +359,6 @@ const InstructorPortal = () => {
 
   const ProductsManagementView = () => (
     <div className="products-container">
-      <button className="back-button" onClick={() => setCurrentView('welcome')}>Back</button>
       <h1 className="page-title">Edit Products</h1>
       <div className="add-product-container">
         <button className="add-product-button" onClick={openAddModal}>Add Product +</button>
@@ -392,6 +389,11 @@ const InstructorPortal = () => {
   return (
     <div className="app">
       <header className="header">
+        {currentView !== 'welcome' && (
+          <button className="back-button" onClick={() => setCurrentView('welcome')}>
+            ← Back to Home
+          </button>
+        )}
         <div className="user-info">{currentInstructor.name}</div>
         <nav className="nav-menu">
           <button className="nav-item" onClick={() => setCurrentView('students')}>
@@ -403,9 +405,12 @@ const InstructorPortal = () => {
           <button className="nav-item" onClick={() => setCurrentView('products')}>
             Products Settings
           </button>
+          {onLogout && (
+            <button className="nav-item" onClick={onLogout}>Logout</button>
+          )}
         </nav>
       </header>
-      
+
       {currentView === 'welcome' && <WelcomeView />}
       {currentView === 'students' && <StudentsView />}
       {currentView === 'studentActivities' && <StudentActivitiesView />}
