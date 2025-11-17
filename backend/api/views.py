@@ -118,7 +118,7 @@ def login(request):
     requested_role = (data.get('role') or '').lower()
     if student_user and instructor_user:
         if requested_role not in ('student', 'instructor'):
-            return JsonResponse({'error': 'Ambiguous account: both student and instructor exist for this email. Provide "role" in request ("student" or "instructor").'}, status=409)
+            return JsonResponse({'error': 'Conflicting emails for Student and Instructor'}, status=409)
         role = requested_role
         user = student_user if role == 'student' else instructor_user
     else:
