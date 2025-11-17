@@ -345,7 +345,8 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             {list.map(p => (
               <div key={p.studentId} className="student-row" style={{ color: '#1e8b5c', background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                 <div className="student-name">{p.name} <span style={{ marginLeft: 8, fontSize: 14, color: '#666' }}>({p.count} purchase(s), {p.total} coins)</span></div>
-                <button className="view-activities-button" onClick={() => onView(p.studentId)}>View Activities</button>
+                {/* Use modal-friendly button style so it is visible on white modal panel */}
+                <button className="btn-primary" onClick={() => onView(p.studentId)} style={{ marginLeft: 12 }}>View Activities</button>
               </div>
             ))}
           </div>
