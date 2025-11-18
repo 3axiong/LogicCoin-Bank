@@ -7,7 +7,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
-  const [products, setProducts] = useState();
+  const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productFilter, setProductFilter] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
@@ -295,10 +295,10 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   );
 
   const ProductsListView = () => {
-    // Treat productFilter as selected product id when using dropdown; empty => show all
-    const filteredProducts = products.filter(p => !productFilter || String(p.id) === String(productFilter));
+    const filteredProducts = (products ?? []).filter(
+      p => !productFilter || String(p.id) === String(productFilter)
+    );
 
-    
     return (
       <div className="students-container">
         <h1 className="page-title">Products List</h1>
@@ -313,7 +313,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
                 }}
               >
               <option value="">All products</option>
-                {products.map(p => (
+                {(products ?? []).map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
             </select>
