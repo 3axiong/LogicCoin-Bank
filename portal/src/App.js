@@ -11,7 +11,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
 
   if (view === 'student') return (
-    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+    <StudentPortal user={currentUser} onBack={() => setView('home')} onLogout={() => { setCurrentUser(null); setView('home'); }} />
   );
 
   if (view === 'instructor') return (
@@ -58,7 +58,8 @@ function App() {
             </button>
             <button 
               className="cta-button" 
-              onClick={() => { setRole('instructor'); setView('login'); }}
+              // onClick={() => { setRole('instructor'); setView('login'); }}
+              onClick={() => { setRole('instructor'); setView('instructor'); }}
             >
               Instructor Portal
             </button>
