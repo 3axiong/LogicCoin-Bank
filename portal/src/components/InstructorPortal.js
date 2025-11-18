@@ -23,8 +23,9 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
 
   const fetchJson = async (url, options) => {
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    const fullUrl = api(url);           // 👈 add this
+    const res = await fetch(fullUrl, options);
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${fullUrl}`);
     return res.json();
   };
   const showAlert = (message) => setAlert({ open: true, message });
