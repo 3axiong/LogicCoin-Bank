@@ -179,12 +179,12 @@ export default function StudentPortal({ user, onLogout, onBack }) {
 
         {loading && <div className="loading">Loading…</div>}
         {!loading && (
-          <div className="product-grid">
+          <div className="products-grid">
             {products.map((product) => {
               const hasFunds = balance >= product.price;
               return (
                 <div key={product.id} className="product-card">
-                  <div className="product-name">{product.name}</div>
+                  <div className="product-title">{product.name}</div>
                   <div className="product-description">
                     {product.description}
                   </div>

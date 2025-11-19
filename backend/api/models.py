@@ -70,7 +70,7 @@ class Purchase(models.Model):
         ordering = ['-date']
 
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='purchases')
-    product = models.ForeignKey('Product', on_delete=models.PROTECT, related_name='purchases')# prevent deleting products that were bought
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='purchases')
 
     product_name = models.CharField(max_length=100)          
     unit_price_at_purchase = models.PositiveIntegerField()      

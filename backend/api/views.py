@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 import json
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
-
+from django.db.models.deletion import ProtectedError
 from .models import Student, Product, Purchase, Instructors
 
 '''
@@ -193,13 +193,23 @@ def create_product(request):
     }, status=201)
 
 @csrf_exempt
-@require_http_methods(["PATCH", "PUT"])
+@require_http_methods(["PATCH", "PUT", "DELETE"])
 def update_product(request, product_id: int):
     from .models import Product
     try:
         p = Product.objects.get(pk=product_id)
     except Product.DoesNotExist:
         return JsonResponse({"error": "not found"}, status=404)
+    
+    if request.method == "DELETE":
+        try:
+            p.delete()
+        except ProtectedError:
+            return JsonResponse(
+                {"error": "Cannot delete product with existing purchases."},
+                status=400,
+            )
+        return JsonResponse({"success": True}, status=204)
 
     data = _parse_json(request)
     if "name" in data: p.name = (data["name"] or "").strip()
@@ -219,6 +229,7 @@ def update_product(request, product_id: int):
         "id": p.id, "name": p.name, "price": p.price,
         "description": p.description or "", "terms": p.terms or [], "is_active": p.is_active
     })
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_purchase(request):

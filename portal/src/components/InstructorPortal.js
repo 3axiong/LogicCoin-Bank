@@ -22,12 +22,31 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const API_BASE = 'http://127.0.0.1:8000';
   const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
 
+  // const fetchJson = async (url, options) => {
+  //   const fullUrl = api(url);         
+  //   const res = await fetch(fullUrl, options);
+  //   if (!res.ok) throw new Error(`HTTP ${res.status} for ${fullUrl}`);
+  //   return res.json();
+  // };
   const fetchJson = async (url, options) => {
-    const fullUrl = api(url);           // 👈 add this
+    const fullUrl = api(url);
     const res = await fetch(fullUrl, options);
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${fullUrl}`);
-    return res.json();
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} for ${fullUrl}`);
+    }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return null;
+    }
+
+    const text = await res.text();
+    if (!text) {
+      return null;
+    }
+
+    return JSON.parse(text);
   };
+
   const showAlert = (message) => setAlert({ open: true, message });
   const closeAlert = () => setAlert({ open: false, message: '' });
 
@@ -126,6 +145,34 @@ const InstructorPortal = ({ onBack, onLogout }) => {
       setShowProductModal(false);
     } catch (e) {
       showAlert('Failed to save product.');
+    }
+  };
+
+  const deleteProduct = async (product) => {
+    if (!product?.id) return;
+
+    try {
+      await fetchJson(`/products/${product.id}/`, {
+        method: 'DELETE',
+      });
+
+      // Remove from local state
+      setProducts((prev) => (prev || []).filter((p) => p.id !== product.id));
+
+      showAlert('Product deleted.');
+    } catch (e) {
+        const msg = e?.message || '';
+
+        if (msg.includes('HTTP 404')) {
+          setProducts((prev) => (prev || []).filter((p) => p.id !== product.id));
+          showAlert('Product was already deleted.');
+          return;
+        }
+        if (msg.includes('HTTP 400')) {
+          showAlert("Cannot delete this product because it has existing purchases.");
+          return;
+        }
+        showAlert('Failed to delete product.');
     }
   };
 
@@ -394,12 +441,30 @@ const InstructorPortal = ({ onBack, onLogout }) => {
               ))}
             </div>
             <div className="product-price">{product.price} Coins</div>
-            <button
-              className="purchase-button"
-              onClick={() => openEditModal(product)}
-            >
-              Edit Product
-            </button>
+            <div className="product-actions-row">
+            <div className="product-actions">
+              <button
+                className="btn-edit"
+                onClick={() => openEditModal(product)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="btn-delete"
+                onClick={() =>
+                  askConfirm(
+                    `Delete product "${product.name}"?`,
+                    () => deleteProduct(product)
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+
+            </div>
+
           </div>
         ))}
       </div>
