@@ -1,12 +1,355 @@
+// import React, { useState, useMemo, useEffect } from "react";
+// import { students as seedStudents, activities as seedActivities } from "../data/mockData";
+// // import fetchJson from wherever you defined it
+// async function fetchJson(url, options = {}) {
+//   const res = await fetch(url, options);
+//   if (!res.ok) throw new Error("Network error");
+//   return res.json();
+// }
+// export default function StudentPortal({ user, onLogout, onBack }) {
+//   const initialStudent = useMemo(() => {
+//     if (user && (user.id ?? user.email)) {
+//       return {
+//         id: user.id ?? -1,
+//         name: user.name ?? "Student",
+//         email: user.email ?? "",
+//         balance: Number(user.available_coins ?? user.balance ?? 0),
+//       };
+//     }
+//     const fallback = seedStudents?.[0];
+//     if (fallback) {
+//       return {
+//         ...fallback,
+//         balance: Number(fallback.balance ?? 0),
+//       };
+//     }
+
+//     return {
+//       id: -1,
+//       name: "Student",
+//       email: "",
+//       balance: 0,
+//     };
+//   }, [user]);
+
+//   const [currentView, setCurrentView] = useState("welcome");
+//   const [currentStudent, setCurrentStudent] = useState(initialStudent);
+
+//   const [products, setProducts] = useState([]);
+//   const [studentActivities, setStudentActivities] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [notice, setNotice] = useState("");
+
+//   const alertMsg = (m) => setNotice(m);
+//   const clearMsg = () => setNotice("");
+
+//   const balance = currentStudent?.balance ?? 0;
+//   const studentId = currentStudent?.id ?? -1;
+
+//   // --- Load products when needed ---
+//   useEffect(() => {
+//     if (currentView !== "products") return;
+//     setLoading(true);
+//     fetchJson("/products/")
+//       .then(setProducts)
+//       .catch(() => alertMsg("Failed to load products."))
+//       .finally(() => setLoading(false));
+//   }, [currentView]);
+
+//   // --- Load activities when needed ---
+//   useEffect(() => {
+//     if (!studentId || currentView !== "activities") return;
+//     setLoading(true);
+//     fetchJson(`/students/${studentId}/activities/`)
+//       .then(setStudentActivities)
+//       .catch(() => alertMsg("Failed to load activity."))
+//       .finally(() => setLoading(false));
+//   }, [currentView, studentId]);
+
+//   // --- Purchase flow connected to Django ---
+//   const handlePurchase = async (product) => {
+//     if (!currentStudent?.id) {
+//       alertMsg("No student found.");
+//       return;
+//     }
+//     if (balance < product.price) {
+//       alertMsg("Insufficient funds.");
+//       return;
+//     }
+
+//     try {
+//       const created = await fetchJson("/purchases/create/", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           studentId: currentStudent.id,
+//           productId: product.id,
+//           quantity: 1,
+//           description: `INV-${Date.now()}`,
+//         }),
+//       });
+
+//       // Update balance and activity list using server response
+//       setCurrentStudent((s) =>
+//         s ? { ...s, balance: Number(created.balance ?? s.balance ?? 0) } : s
+//       );
+//       setStudentActivities((prev) => [created, ...(prev || [])]);
+//       alertMsg(`Purchased "${product.name}" for ${product.price} coins.`);
+//     } catch (e) {
+//       alertMsg(e?.message || "Failed to complete purchase.");
+//     }
+//   };
+
+//   // ---- Views ----
+//   const WelcomeView = () => (
+//     <div className="main-content">
+//       <div className="left-section">
+//         <div className="logo-section">
+//           <div className="logo-circle">
+//             <div className="logo-text">ASU LOGO</div>
+//             <div className="globe-icon">🌐</div>
+//           </div>
+
+//           <div className="right-section">
+//             <div className="welcome-text">Welcome To</div>
+//             <h1 className="main-title">
+//               LogicCoin
+//               <br />
+//               Bank Portal
+//             </h1>
+
+//             <div className="center-balance">
+//               <div className="balance-label">Your Balance</div>
+//               <div className="balance-amount">{balance}</div>
+//               <div className="balance-currency">coins</div>
+//             </div>
+
+//             <div style={{ textAlign: "center" }}>
+//               <button
+//                 className="cta-button"
+//                 onClick={() => setCurrentView("products")}
+//               >
+//                 Use coins
+//               </button>
+//             </div>
+
+//             <div className="page-indicators" />
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="right-section">
+//         <div className="welcome-text">Welcome To</div>
+//         <h1 className="main-title">
+//           LogicCoin
+//           <br />
+//           Bank Portal
+//         </h1>
+
+//         <div className="center-balance">
+//           <div className="balance-label">Your Balance</div>
+//           <div className="balance-amount">{balance}</div>
+//           <div className="balance-currency">coins</div>
+//         </div>
+
+//         <button
+//           className="cta-button"
+//           onClick={() => setCurrentView("products")}
+//         >
+//           Use coins
+//         </button>
+//       </div>
+//     </div>
+//   );
+
+//   const ProductsView = () => (
+//     <div className="main-content">
+//       <div className="left-section">
+//         <div className="logo-section">
+//           <div className="logo-circle">
+//             <div className="logo-text">ASU LOGO</div>
+//             <div className="globe-icon">🌐</div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="right-section">
+//         <div className="welcome-text">Use your coins on</div>
+//         <h1 className="main-title">Available Products</h1>
+
+//         {loading && <div className="loading">Loading…</div>}
+//         {!loading && (
+//           <div className="products-grid">
+//             {products.map((product) => {
+//               const hasFunds = balance >= product.price;
+//               return (
+//                 <div key={product.id} className="product-card">
+//                   <div className="product-title">{product.name}</div>
+//                   <div className="product-description">
+//                     {product.description}
+//                   </div>
+
+//                   <div className="product-terms">
+//                     {product.terms?.map((term, i) => (
+//                       <span key={i} className="term">
+//                         {term}
+//                       </span>
+//                     ))}
+//                   </div>
+
+//                   <div className="product-price-section">
+//                     <div className="price-label">Price:</div>
+//                     <div className="product-price">
+//                       {product.price} Coins
+//                     </div>
+//                   </div>
+
+//                   <button
+//                     className={`purchase-button ${
+//                       hasFunds ? "" : "insufficient-funds"
+//                     }`}
+//                     onClick={() => handlePurchase(product)}
+//                     disabled={!hasFunds}
+//                   >
+//                     {hasFunds ? "Purchase" : "Insufficient Funds"}
+//                   </button>
+//                 </div>
+//               );
+//             })}
+//           </div>
+//         )}
+
+//         <div className="product-actions">
+//           <button
+//             className="cta-button"
+//             onClick={() => setCurrentView("activities")}
+//           >
+//             View activity
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+
+//   const ActivitiesView = () => (
+//     <div className="main-content">
+//       <div className="left-section">
+//         <div className="logo-section">
+//           <div className="logo-circle">
+//             <div className="logo-text">ASU LOGO</div>
+//             <div className="globe-icon">🌐</div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="right-section">
+//         <div className="welcome-text">Recent</div>
+//         <h1 className="main-title">Activity</h1>
+
+//         {loading && <div className="loading">Loading…</div>}
+
+//         {!loading && (studentActivities?.length ?? 0) === 0 ? (
+//           <div className="empty-activity">No activity yet.</div>
+//         ) : (
+//           !loading && (
+//             <div className="activity-list">
+//               {studentActivities.map((a) => (
+//                 <div key={a.id} className="activity-item">
+//                   <div className="activity-name">{a.product}</div>
+//                   <div className="activity-meta">
+//                     <span>{new Date(a.date).toLocaleString()}</span>
+//                     <span>-{a.amount} coins</span>
+//                     {a.refunded && (
+//                       <span className="term refunded">Refunded</span>
+//                     )}
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//           )
+//         )}
+
+//         <div className="product-actions">
+//           <button
+//             className="cta-button"
+//             onClick={() => setCurrentView("welcome")}
+//           >
+//             Back to welcome
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+
+//   return (
+//     <div className="app">
+//       <header
+//         className="top-bar"
+//         style={{
+//           display: "flex",
+//           justifyContent: "space-between",
+//           alignItems: "center",
+//           padding: "10px 16px",
+//         }}
+//       >
+//         <div style={{ display: "flex", gap: 8 }}>
+//           {onBack && (
+//             <button
+//               className="cta-button"
+//               style={{ background: "#777" }}
+//               onClick={onBack}
+//             >
+//               Back
+//             </button>
+//           )}
+//         </div>
+
+//         <div className="coin-balance" style={{ fontWeight: 600 }}>
+//           Coins: <span className="amount">{balance}</span>
+//         </div>
+
+//         <div>
+//           {onLogout && (
+//             <button
+//               className="cta-button"
+//               style={{ background: "#b71c1c" }}
+//               onClick={onLogout}
+//             >
+//               Logout
+//             </button>
+//           )}
+//         </div>
+//       </header>
+
+//       {notice && (
+//         <div
+//           className="alert"
+//           onClick={clearMsg}
+//           style={{ margin: "8px 16px" }}
+//         >
+//           {notice}
+//         </div>
+//       )}
+
+//       {currentView === "welcome" && <WelcomeView />}
+//       {currentView === "products" && <ProductsView />}
+//       {currentView === "activities" && <ActivitiesView />}
+//     </div>
+//   );
+// }
+
 import React, { useState, useMemo, useEffect } from "react";
-import { students as seedStudents, activities as seedActivities } from "../data/mockData";
-// import fetchJson from wherever you defined it
+import { students as seedStudents } from "../data/mockData";
+
+// Generic JSON helper (your existing helper)
 async function fetchJson(url, options = {}) {
   const res = await fetch(url, options);
   if (!res.ok) throw new Error("Network error");
   return res.json();
 }
+
 export default function StudentPortal({ user, onLogout, onBack }) {
+  // --- Initial student (keeps your logic, but uses same student as main if no user) ---
   const initialStudent = useMemo(() => {
     if (user && (user.id ?? user.email)) {
       return {
@@ -16,6 +359,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         balance: Number(user.available_coins ?? user.balance ?? 0),
       };
     }
+
     const fallback = seedStudents?.[0];
     if (fallback) {
       return {
@@ -46,7 +390,12 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   const balance = currentStudent?.balance ?? 0;
   const studentId = currentStudent?.id ?? -1;
 
-  // --- Load products when needed ---
+  // Keep currentStudent synced if user / initialStudent changes
+  useEffect(() => {
+    setCurrentStudent(initialStudent);
+  }, [initialStudent]);
+
+  // --- Load products when Products view is active ---
   useEffect(() => {
     if (currentView !== "products") return;
     setLoading(true);
@@ -56,7 +405,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       .finally(() => setLoading(false));
   }, [currentView]);
 
-  // --- Load activities when needed ---
+  // --- Load activities when Activities view is active ---
   useEffect(() => {
     if (!studentId || currentView !== "activities") return;
     setLoading(true);
@@ -66,14 +415,16 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       .finally(() => setLoading(false));
   }, [currentView, studentId]);
 
-  // --- Purchase flow connected to Django ---
+  // --- Purchase flow (your Django-connected version) ---
   const handlePurchase = async (product) => {
     if (!currentStudent?.id) {
       alertMsg("No student found.");
       return;
     }
     if (balance < product.price) {
-      alertMsg("Insufficient funds.");
+      alertMsg(
+        `Insufficient balance! You need ${product.price} coins but only have ${balance} coins.`
+      );
       return;
     }
 
@@ -89,25 +440,188 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         }),
       });
 
-      // Update balance and activity list using server response
+      // Update balance from server response
       setCurrentStudent((s) =>
         s ? { ...s, balance: Number(created.balance ?? s.balance ?? 0) } : s
       );
+      // Prepend new activity
       setStudentActivities((prev) => [created, ...(prev || [])]);
-      alertMsg(`Purchased "${product.name}" for ${product.price} coins.`);
+
+      alertMsg(
+        `Successfully purchased ${product.name} for ${product.price} coins!`
+      );
+      setCurrentView("activities"); // Same UX as main after purchase
     } catch (e) {
       alertMsg(e?.message || "Failed to complete purchase.");
     }
   };
 
-  // ---- Views ----
-  const WelcomeView = () => (
-    <div className="main-content">
-      <div className="left-section">
-        <div className="logo-section">
-          <div className="logo-circle">
-            <div className="logo-text">ASU LOGO</div>
-            <div className="globe-icon">🌐</div>
+  // --- Views with UI matching main branch ---
+
+  const ProductsView = () => (
+    <div>
+      <h1 className="page-title">Products&apos; List</h1>
+      <div
+        className="balance-title"
+        style={{ textAlign: "center", marginBottom: 20 }}
+      >
+        Your Current Balance:{" "}
+        <span className="balance-highlight">{balance} coins</span>
+      </div>
+
+      {loading && <div className="loading">Loading…</div>}
+
+      {!loading && (
+        <div className="products-grid">
+          {products.map((product) => (
+            <div key={product.id} className="product-card">
+              <div className="product-title">{product.name}</div>
+              <div className="product-description">
+                {String(product.description ?? "")
+                  .split("\n")
+                  .map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+              </div>
+
+              {product.terms && (
+                <div className="product-terms">
+                  {product.terms.map((term, i) => (
+                    <span key={i} className="term">
+                      {term}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="product-price-section">
+                <div className="price-label">Price:</div>
+                <div className="product-price">{product.price} Coins</div>
+              </div>
+
+              <button
+                className={`purchase-button ${
+                  balance < product.price ? "insufficient-funds" : ""
+                }`}
+                onClick={() => handlePurchase(product)}
+                disabled={balance < product.price}
+              >
+                {balance < product.price ? "Insufficient Funds" : "Purchase"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const ActivitiesView = () => (
+    <div>
+      <h1 className="page-title">Account Activities</h1>
+
+      {loading ? (
+        <div className="loading">Loading…</div>
+      ) : studentActivities.length === 0 ? (
+        <div style={{ textAlign: "center", opacity: 0.7 }}>
+          No recent activity.
+        </div>
+      ) : (
+        <div className="activities-table">
+          {studentActivities.map((activity) => (
+            <div key={activity.id} className="activity-row">
+              <div>
+                {activity.date
+                  ? new Date(activity.date).toLocaleDateString("en-US")
+                  : ""}
+              </div>
+              <div>{activity.description}</div>
+              <div>{activity.product}</div>
+              <div>{activity.amount} coins</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const NavButton = ({ id, children }) => (
+    <button className="nav-item" onClick={() => setCurrentView(id)}>
+      {children}
+    </button>
+  );
+
+  return (
+    <div className="app">
+      {/* HEADER – copied from main, wired to your state */}
+      <header className="header">
+        {currentView !== "welcome" && (
+          <button
+            className="back-button"
+            onClick={() => {
+              // First preference: navigate to the portal's Welcome view
+              if (currentView !== "welcome") {
+                setCurrentView("welcome");
+                return;
+              }
+              // If already on welcome, defer to parent onBack if provided
+              if (typeof onBack === "function") {
+                return onBack();
+              }
+              // Otherwise try browser history then fallback to root
+              if (
+                typeof window !== "undefined" &&
+                window.history &&
+                window.history.length > 1
+              ) {
+                return window.history.back();
+              }
+              window.location.href = "/";
+            }}
+          >
+            ← Back to Home
+          </button>
+        )}
+
+        <nav className="nav-menu" style={{ margin: "0 auto" }}>
+          <NavButton id="products">Use Coins</NavButton>
+          <NavButton id="activities">Account Activities</NavButton>
+          <button className="nav-item">Contact Instructor</button>
+          {onLogout && (
+            <button className="nav-item" onClick={onLogout}>
+              Logout
+            </button>
+          )}
+        </nav>
+
+        <div className="coin-balance">
+          <span className="amount">{balance}</span>
+          coins
+        </div>
+      </header>
+
+      {/* Your notice bar, doesn't affect layout */}
+      {notice && (
+        <div
+          className="alert"
+          onClick={clearMsg}
+          style={{ margin: "8px 16px" }}
+        >
+          {notice}
+        </div>
+      )}
+
+      {/* WELCOME PAGE – same layout/classes as main */}
+      {currentView === "welcome" && (
+        <div className="main-content">
+          <div className="left-section">
+            <div className="logo-section">
+              <div className="logo-circle">
+                <div className="logo-text">ASU LOGO</div>
+                <div className="globe-icon" aria-hidden>
+                  🌐
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="right-section">
@@ -136,204 +650,20 @@ export default function StudentPortal({ user, onLogout, onBack }) {
             <div className="page-indicators" />
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="right-section">
-        <div className="welcome-text">Welcome To</div>
-        <h1 className="main-title">
-          LogicCoin
-          <br />
-          Bank Portal
-        </h1>
-
-        <div className="center-balance">
-          <div className="balance-label">Your Balance</div>
-          <div className="balance-amount">{balance}</div>
-          <div className="balance-currency">coins</div>
-        </div>
-
-        <button
-          className="cta-button"
-          onClick={() => setCurrentView("products")}
-        >
-          Use coins
-        </button>
-      </div>
-    </div>
-  );
-
-  const ProductsView = () => (
-    <div className="main-content">
-      <div className="left-section">
-        <div className="logo-section">
-          <div className="logo-circle">
-            <div className="logo-text">ASU LOGO</div>
-            <div className="globe-icon">🌐</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="right-section">
-        <div className="welcome-text">Use your coins on</div>
-        <h1 className="main-title">Available Products</h1>
-
-        {loading && <div className="loading">Loading…</div>}
-        {!loading && (
-          <div className="products-grid">
-            {products.map((product) => {
-              const hasFunds = balance >= product.price;
-              return (
-                <div key={product.id} className="product-card">
-                  <div className="product-title">{product.name}</div>
-                  <div className="product-description">
-                    {product.description}
-                  </div>
-
-                  <div className="product-terms">
-                    {product.terms?.map((term, i) => (
-                      <span key={i} className="term">
-                        {term}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="product-price-section">
-                    <div className="price-label">Price:</div>
-                    <div className="product-price">
-                      {product.price} Coins
-                    </div>
-                  </div>
-
-                  <button
-                    className={`purchase-button ${
-                      hasFunds ? "" : "insufficient-funds"
-                    }`}
-                    onClick={() => handlePurchase(product)}
-                    disabled={!hasFunds}
-                  >
-                    {hasFunds ? "Purchase" : "Insufficient Funds"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="product-actions">
-          <button
-            className="cta-button"
-            onClick={() => setCurrentView("activities")}
-          >
-            View activity
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ActivitiesView = () => (
-    <div className="main-content">
-      <div className="left-section">
-        <div className="logo-section">
-          <div className="logo-circle">
-            <div className="logo-text">ASU LOGO</div>
-            <div className="globe-icon">🌐</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="right-section">
-        <div className="welcome-text">Recent</div>
-        <h1 className="main-title">Activity</h1>
-
-        {loading && <div className="loading">Loading…</div>}
-
-        {!loading && (studentActivities?.length ?? 0) === 0 ? (
-          <div className="empty-activity">No activity yet.</div>
-        ) : (
-          !loading && (
-            <div className="activity-list">
-              {studentActivities.map((a) => (
-                <div key={a.id} className="activity-item">
-                  <div className="activity-name">{a.product}</div>
-                  <div className="activity-meta">
-                    <span>{new Date(a.date).toLocaleString()}</span>
-                    <span>-{a.amount} coins</span>
-                    {a.refunded && (
-                      <span className="term refunded">Refunded</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
-
-        <div className="product-actions">
-          <button
-            className="cta-button"
-            onClick={() => setCurrentView("welcome")}
-          >
-            Back to welcome
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="app">
-      <header
-        className="top-bar"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "10px 16px",
-        }}
-      >
-        <div style={{ display: "flex", gap: 8 }}>
-          {onBack && (
-            <button
-              className="cta-button"
-              style={{ background: "#777" }}
-              onClick={onBack}
-            >
-              Back
-            </button>
-          )}
-        </div>
-
-        <div className="coin-balance" style={{ fontWeight: 600 }}>
-          Coins: <span className="amount">{balance}</span>
-        </div>
-
-        <div>
-          {onLogout && (
-            <button
-              className="cta-button"
-              style={{ background: "#b71c1c" }}
-              onClick={onLogout}
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </header>
-
-      {notice && (
-        <div
-          className="alert"
-          onClick={clearMsg}
-          style={{ margin: "8px 16px" }}
-        >
-          {notice}
+      {/* PRODUCTS + ACTIVITIES PAGES – wrapped in same containers as main */}
+      {currentView === "products" && (
+        <div className="products-container">
+          <ProductsView />
         </div>
       )}
 
-      {currentView === "welcome" && <WelcomeView />}
-      {currentView === "products" && <ProductsView />}
-      {currentView === "activities" && <ActivitiesView />}
+      {currentView === "activities" && (
+        <div className="activities-container">
+          <ActivitiesView />
+        </div>
+      )}
     </div>
   );
 }
