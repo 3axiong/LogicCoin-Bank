@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { students as seedStudents } from "../data/mockData";
 
-// Generic JSON helper (your existing helper)
+// Generic JSON helper 
 async function fetchJson(url, options = {}) {
   const res = await fetch(url, options);
   if (!res.ok) throw new Error("Network error");
@@ -10,7 +10,6 @@ async function fetchJson(url, options = {}) {
 }
 
 export default function StudentPortal({ user, onLogout, onBack }) {
-  // --- Initial student (keeps your logic, but uses same student as main if no user) ---
   const initialStudent = useMemo(() => {
     if (user && (user.id ?? user.email)) {
       return {
@@ -76,7 +75,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       .finally(() => setLoading(false));
   }, [currentView, studentId]);
 
-  // --- Purchase flow (your Django-connected version) ---
+  // --- Purchase flow  ---
   const handlePurchase = async (product) => {
     if (!currentStudent?.id) {
       alertMsg("No student found.");
