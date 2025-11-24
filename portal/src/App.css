@@ -55,6 +55,25 @@ body {
   z-index: 10;
 }
 
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
 .user-info {
   color: white;
   font-size: 18px;
@@ -68,18 +87,23 @@ body {
 }
 
 .nav-item {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-  background: none;
-  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  text-decoration: none;
 }
 
 .nav-item:hover {
-  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
 .coin-balance {
@@ -117,8 +141,8 @@ body {
 }
 
 .logo-circle {
-  width: 300px;
-  height: 300px;
+  width: 350px;
+  height: 350px;
   background: linear-gradient(135deg, #87ceeb 0%, #98fb98 100%);
   border-radius: 50%;
   display: flex;
@@ -133,6 +157,13 @@ body {
   font-weight: bold;
   color: #1e8b5c;
   text-align: center;
+}
+
+.logo-image {
+  width: 216px;
+  height: 216px;
+  object-fit: contain;
+  border-radius: 0;
 }
 
 .globe-icon {
@@ -173,6 +204,13 @@ body {
   font-weight: bold;
   line-height: 1.1;
   margin-bottom: 40px;
+}
+
+.welcome-cta-row {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 /* Center Balance Display */
@@ -263,6 +301,40 @@ body {
   z-index: 10;
 }
 
+/* Filter row styling for Products List */
+.filter-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.filter-row .form-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-weight: 700;
+}
+
+.filter-select {
+  width: 260px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e8b5c;
+  background: #f9fdfb;
+  border: 2px solid rgba(30, 139, 92, 0.30);
+  border-radius: 12px;
+  outline: none;
+}
+
+.filter-select:focus {
+  background: #fff;
+  border-color: #1e8b5c;
+  box-shadow: 0 0 0 4px rgba(30, 139, 92, 0.08);
+}
+
 .page-title {
   color: white;
   font-size: 48px;
@@ -270,8 +342,21 @@ body {
   text-align: center;
   margin-bottom: 20px;
 }
+.balance-title {
+  margin-top: 10px;
+  font-size: 36px;
+  color: white;
+  font-weight: 700;
+  text-align: center;
+}
 
-.current-balance-display {
+.balance-title .balance-highlight {
+  color: #90EE90; 
+  font-weight: 900;
+  font-size: 40px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+/* .current-balance-display {
   color: white;
   font-size: 24px;
   font-weight: 600;
@@ -284,7 +369,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 40px;
-}
+} */
 
 .balance-highlight {
   color: #90EE90;
@@ -437,6 +522,25 @@ body {
 }
 
 .view-activities-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.view-activities-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.back-button {
   background: #8b1538;
   color: white;
   border: none;
@@ -446,10 +550,6 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease;
-}
-
-.view-activities-button:hover {
-  background: #6d1028;
 }
 
 /* Activities List */
@@ -488,19 +588,22 @@ body {
 }
 
 .edit-button {
-  background: #8b1538;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  border: none;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: bold;
-  border-radius: 6px;
+  font-weight: 600;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .edit-button:hover {
-  background: #6d1028;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
 /* Edit Activity */
@@ -564,19 +667,22 @@ body {
 }
 
 .action-button {
-  background: #8b1538;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  border: none;
   padding: 15px 30px;
   font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
+  font-weight: 600;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .action-button:hover {
-  background: #6d1028;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
 /* Add Product Button */
@@ -586,19 +692,22 @@ body {
 }
 
 .add-product-button {
-  background: #8b1538;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  border: none;
   padding: 15px 30px;
   font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
+  font-weight: 600;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .add-product-button:hover {
-  background: #6d1028;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
 /* Responsive Design */
@@ -625,12 +734,18 @@ body {
   }
 
   .logo-circle {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
   }
 
   .logo-text {
     font-size: 24px;
+  }
+
+  .logo-image {
+    width: 162px;
+    height: 162px;
+    border-radius: 0;
   }
 
   .main-title {
@@ -648,3 +763,243 @@ body {
     text-align: center;
   }
 }
+
+/* 
+   Add Product Modal (Form) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* above header/content */
+  animation: modalFade 0.25s ease forwards;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal card */
+.modal-panel {
+  background: #ffffff;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.30);
+  animation: modalPop 0.25s ease forwards;
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Title */
+.modal-title {
+  color: #1e8b5c;
+  font-size: 32px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* Form layout */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: #1e8b5c;
+  font-size: 18px;
+}
+
+/* Inputs */
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  background: #f9fdfb;
+  border: 2px solid rgba(30, 139, 92, 0.30);
+  border-radius: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  background: #fff;
+  border-color: #1e8b5c;
+  box-shadow: 0 0 0 3px rgba(30, 139, 92, 0.15);
+}
+
+/* Validation message */
+.form-error {
+  color: #b91c1c;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+/* Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Buttons reuse your palette */
+.btn-primary {
+  background: #1e8b5c;
+  color: #ffffff;
+  border: none;
+  padding: 14px 26px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(30, 139, 92, 0.30);
+}
+
+.btn-primary:hover {
+  background: #176b47;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(30, 139, 92, 0.40);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #1e8b5c;
+  border: 2px solid #1e8b5c;
+  padding: 14px 26px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(30, 139, 92, 0.10);
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .modal-panel {
+    padding: 24px;
+    border-radius: 20px;
+    max-width: 92vw;
+  }
+  .modal-title {
+    font-size: 26px;
+  }
+}
+
+.btn-danger {
+  background: #b91c1c;         /* red-700 */
+  color: #fff;
+  border: none;
+  padding: 14px 26px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
+}
+
+.btn-danger:hover {
+  background: #991b1b;         /* red-800 */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(185, 28, 28, 0.45);
+}
+.term.refunded {
+  background: #b91c1c;
+  color: white;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  margin-left: 10px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-panel.confirm {
+  max-width: 520px;
+  padding-top: 28px;
+}
+
+.confirm-message {
+  color: #1e8b5c;
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 10px 0 20px;
+  text-align: center;
+}
+.edit-button.disabled,
+.edit-button[aria-disabled="true"] {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+.edit-button.disabled:hover,
+.edit-button[aria-disabled="true"]:hover {
+  background: #666;
+  transform: none;
+}
+
+.action-button[aria-disabled="true"] {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+.action-button[aria-disabled="true"]:hover {
+  background: #666;
+  transform: none;
+}
+
+:root {
+  --asu-maroon: #8C1D40;
+  --asu-gold: #FFC627;
+}
+.lb-wrap { padding: 24px; max-width: 1100px; margin: 24px auto 56px; position: relative; z-index: 10; }
+.lb-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.18); border: 2px solid var(--asu-gold); }
+.lb-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(90deg, var(--asu-maroon), #5f132b); color: #fff; }
+.lb-title { margin: 0; font-weight: 800; font-size: 20px; letter-spacing: .3px; }
+.lb-chip { background: var(--asu-gold); color: #111; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 999px; }
+
+.lb-podium { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+@media (min-width: 768px) { .lb-podium { grid-template-columns: repeat(3, 1fr); } }
+
+.lb-podium-card { position: relative; border-radius: 14px; padding: 16px; color: #fff; text-align: center; }
+.lb-gold { background: linear-gradient(135deg, var(--asu-gold), #ffe792); color: #111; }
+.lb-maroon { background: linear-gradient(135deg, var(--asu-maroon), #5f132b); }
+.lb-rank-badge { position: absolute; top: 10px; left: 10px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.9); color: #111; font-weight: 800; display: grid; place-items: center; }
+.lb-name { margin-top: 8px; font-weight: 800; font-size: 18px; }
+.lb-coins { margin-top: 6px; font-weight: 800; font-size: 22px; }
+.lb-suffix { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-left: 6px; }
+
+.lb-table-scroller { overflow-x: auto; }
+.lb-table { width: 100%; border-collapse: collapse; }
+.lb-table thead { background: #f7f7f7; }
+.lb-table th, .lb-table td { padding: 12px 16px; text-align: left; }
+.lb-table tbody tr { border-top: 1px solid #eee; }
+.lb-table tbody tr:hover { background: #fafafa; }
+.lb-rank.lb-top { color: var(--asu-maroon); font-weight: 800; }
+.lb-coins-cell { white-space: nowrap; }
+
+.lb-note { padding: 10px 16px 16px; font-size: 12px; color: #555; }

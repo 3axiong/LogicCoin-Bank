@@ -1,0 +1,11 @@
+# ---Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+
+# Django database files (Will be using PostgreSQL later)
+db.sqlite3
