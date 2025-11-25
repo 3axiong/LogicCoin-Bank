@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { students, products, activities } from '../data/mockData';
 
 export default function StudentPortal({ user, onLogout, onBack }) {
-  const [currentView, setCurrentView] = useState('welcome');
+  const [currentView, setCurrentView] = useState(() => {
+  return localStorage.getItem("logiccoin_student_view") || "welcome";});
 
   // default student (Bob) if no user provided
   const defaultStudent = students[0] || { id: -1, name: 'Student', balance: 0 };
@@ -18,6 +19,9 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   );
 
   const [balance, setBalance] = useState(currentStudent.balance ?? 0);
+  
+  useEffect(() => {
+  localStorage.setItem("logiccoin_student_view", currentView);}, [currentView]);
 
   useEffect(() => {
     if (user) {
@@ -166,7 +170,15 @@ export default function StudentPortal({ user, onLogout, onBack }) {
           <NavButton id="activities">Account Activities</NavButton>
           <button className="nav-item">Contact Instructor</button>
           {onLogout && (
-            <button className="nav-item" onClick={onLogout}>Logout</button>
+            <button
+              className="nav-item"
+              onClick={() => {
+                localStorage.removeItem("logiccoin_student_view");
+                onLogout();
+              }}
+            >
+              Logout
+            </button>
           )}
         </nav>
 
