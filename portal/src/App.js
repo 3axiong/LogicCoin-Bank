@@ -6,16 +6,33 @@ import ASULeaderboard from "./components/ASULeaderboard";
 import LoginScreen from "./components/LoginScreen";
 
 function App() {
-  const [view, setView] = useState('home');
+  const [view, setView] = useState(() => {
+    const saved = localStorage.getItem('logiccoin_user');
+    if (saved) {
+      try {
+        const u = JSON.parse(saved);
+        return u.role || 'home';
+      } catch (e) {
+        return 'home';
+      }
+    }
+    return 'home';
+  });
+  //const [view, setView] = useState('home');
   const [role, setRole] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  //const [currentUser, setCurrentUser] = useState(null);
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('logiccoin_user');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   if (view === 'student') return (
-    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); localStorage.removeItem('logiccoin_user'); setView('home'); }} />
   );
 
   if (view === 'instructor') return (
-    <InstructorPortal user={currentUser} onLogout={() => { setCurrentUser(null); setView('home'); }} />
+    <InstructorPortal user={currentUser} onLogout={() => { setCurrentUser(null); localStorage.removeItem('logiccoin_user'); setView('home'); }} />
   );
 
 
@@ -25,7 +42,8 @@ function App() {
         role={role}
         onBack={() => setView('home')}
         onLogin={(data) => {
-          setCurrentUser(data);            
+          setCurrentUser(data);
+          localStorage.setItem('logiccoin_user', JSON.stringify(data));
           setView(data.role);              
         }}
       />
