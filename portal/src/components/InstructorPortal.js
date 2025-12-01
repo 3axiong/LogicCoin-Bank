@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState } from 'react';
-import { students, products as productsSeed, activities, instructors } from '../data/mockData';
+import React, { useState, useEffect, useRef } from 'react';
+import { instructors } from '../data/mockData';
 
 
 const InstructorPortal = ({ onBack, onLogout }) => {
@@ -8,17 +8,45 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
-  const [products, setProducts] = useState(productsSeed);
+  const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productFilter, setProductFilter] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [activityList, setActivityList] = useState(activities);
+  const [activityList, setActivityList] = useState([]);
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [editingTxn, setEditingTxn] = useState(null);
-  const [studentList, setStudentList] = useState(students);
+  const [studentList, setStudentList] = useState([]);
   const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
   const [alert, setAlert] = useState({ open: false, message: '' });
+  
+  const API_BASE = 'http://127.0.0.1:8000';
+  const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
+
+  // const fetchJson = async (url, options) => {
+  //   const fullUrl = api(url);         
+  //   const res = await fetch(fullUrl, options);
+  //   if (!res.ok) throw new Error(`HTTP ${res.status} for ${fullUrl}`);
+  //   return res.json();
+  // };
+  const fetchJson = async (url, options) => {
+    const fullUrl = api(url);
+    const res = await fetch(fullUrl, options);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} for ${fullUrl}`);
+    }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return null;
+    }
+
+    const text = await res.text();
+    if (!text) {
+      return null;
+    }
+
+    return JSON.parse(text);
+  };
 
   useEffect(() => {
   localStorage.setItem("logiccoin_instructor_view", currentView);}, [currentView]);
@@ -48,53 +76,46 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     );
   };
 
-  const saveTransaction = ({ amount }) => {
+  const saveTransaction = async ({ amount }) => {
     if (!editingTxn) return;
-
-    const id = editingTxn.id;
-    const oldAmount = Number(editingTxn.amount);
-    const newAmount = Number(amount);
-    const delta = oldAmount - newAmount;
-
-    setActivityList(prev =>
-      prev.map(a => (a.id === id ? { ...a, amount: newAmount } : a))
-    );
-
-    if (selectedActivity?.id === id) {
-      setSelectedActivity(prev => (prev ? { ...prev, amount: newAmount } : prev));
+    try {
+      const updated = await fetchJson(`/purchases/${editingTxn.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: Number(amount) }),
+      });
+      setActivityList(prev => prev.map(a => (a.id === updated.id ? { ...a, amount: updated.amount } : a)));
+      setSelectedStudent(s => s ? { ...s, balance: updated.balance } : s);
+      setStudentList(prev => prev.map(st => st.id === updated.studentId ? { ...st, balance: updated.balance } : st));
+      setShowTxnModal(false);
+      setEditingTxn(null);
+      setCurrentView('studentActivities');
+    } catch (e) {
+      showAlert('Failed to update transaction.');
     }
-
-    if (!editingTxn.refunded) {
-      adjustStudentBalance(editingTxn.studentId, delta);
-    }
-
-    setShowTxnModal(false);
-    setEditingTxn(null);
-    setCurrentView('studentActivities');
   };
 
-  const refundTransaction = (activity) => {
+
+  const refundTransaction = async (activity) => {
     const act = activity ?? editingTxn;
-    if (!act) return;
-    if (act.refunded) return; 
-
-    const { id, studentId } = act;
-    const refundAmount = Number(act.amount) || 0;
-
-    setActivityList(prev =>
-      prev.map(a => (a.id === id ? { ...a, refunded: true } : a))
-    );
-
-    if (selectedActivity?.id === id) {
-      setSelectedActivity(prev => (prev ? { ...prev, refunded: true } : prev));
+    if (!act || act.refunded) return;
+    try {
+      const updated = await fetchJson(`/purchases/${act.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refund: true }),
+      });
+      setActivityList(prev => prev.map(a => (a.id === updated.id ? { ...a, refunded: true } : a)));
+      setSelectedStudent(s => s ? { ...s, balance: updated.balance } : s);
+      setStudentList(prev => prev.map(st => st.id === updated.studentId ? { ...st, balance: updated.balance } : st));
+      setShowTxnModal(false);
+      setEditingTxn(null);
+      setCurrentView('studentActivities');
+    } catch (e) {
+      showAlert('Failed to refund transaction.');
     }
-
-    adjustStudentBalance(studentId, refundAmount);
-
-    setShowTxnModal(false);
-    setEditingTxn(null);
-    setCurrentView('studentActivities');
   };
+
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -106,17 +127,57 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     setShowProductModal(true);
   };
 
-  const saveProduct = (data) => {
-    if (editingProduct) {
-      // edit existing
-      setProducts(prev =>
-        prev.map(p => (p.id === editingProduct.id ? { ...p, ...data } : p))
-      );
-    } else {
-      // create new
-      setProducts(prev => [{ id: `p_${Date.now()}`, ...data }, ...prev]);
+  const saveProduct = async (data) => {
+    try {
+      if (editingProduct?.id) {
+        // update
+        const updated = await fetchJson(`/products/${editingProduct.id}/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        setProducts(prev => prev.map(p => (p.id === editingProduct.id ? updated : p)));
+      } else {
+        // create
+        const created = await fetchJson(`/products/create/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        setProducts(prev => [created, ...prev]);
+      }
+      setShowProductModal(false);
+    } catch (e) {
+      showAlert('Failed to save product.');
     }
-    setShowProductModal(false);
+  };
+
+  const deleteProduct = async (product) => {
+    if (!product?.id) return;
+
+    try {
+      await fetchJson(`/products/${product.id}/`, {
+        method: 'DELETE',
+      });
+
+      // Remove from local state
+      setProducts((prev) => (prev || []).filter((p) => p.id !== product.id));
+
+      showAlert('Product deleted.');
+    } catch (e) {
+        const msg = e?.message || '';
+
+        if (msg.includes('HTTP 404')) {
+          setProducts((prev) => (prev || []).filter((p) => p.id !== product.id));
+          showAlert('Product was already deleted.');
+          return;
+        }
+        if (msg.includes('HTTP 400')) {
+          showAlert("Cannot delete this product because it has existing purchases.");
+          return;
+        }
+        showAlert('Failed to delete product.');
+    }
   };
 
   // Return unique purchasers (student summary) for a product by matching activity.product name
@@ -179,6 +240,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
               className="view-activities-button"
               onClick={() => {
                 setSelectedStudent(student);
+                setActivityList([]);
                 setCurrentView('studentActivities');
               }}
             >
@@ -285,10 +347,10 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   );
 
   const ProductsListView = () => {
-    // Treat productFilter as selected product id when using dropdown; empty => show all
-    const filteredProducts = products.filter(p => !productFilter || String(p.id) === String(productFilter));
+    const filteredProducts = (products ?? []).filter(
+      p => !productFilter || String(p.id) === String(productFilter)
+    );
 
-    
     return (
       <div className="students-container">
         <h1 className="page-title">Products List</h1>
@@ -303,7 +365,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
                 }}
               >
               <option value="">All products</option>
-                {products.map(p => (
+                {(products ?? []).map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
             </select>
@@ -383,13 +445,58 @@ const InstructorPortal = ({ onBack, onLogout }) => {
               ))}
             </div>
             <div className="product-price">{product.price} Coins</div>
-            <button className="purchase-button"
-            onClick={() => openEditModal(product)}>Edit Product</button>
+            <div className="product-actions-row">
+            <div className="product-actions">
+              <button
+                className="btn-edit"
+                onClick={() => openEditModal(product)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="btn-delete"
+                onClick={() =>
+                  askConfirm(
+                    `Delete product "${product.name}"?`,
+                    () => deleteProduct(product)
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+
+            </div>
+
           </div>
         ))}
       </div>
     </div>
   );
+  // Load Students
+  useEffect(() => {
+    if (currentView !== 'students') return;
+    fetchJson('/students/')
+      .then(setStudentList)
+      .catch(() => showAlert('Failed to load students.'));
+  }, [currentView]);
+
+  // Load Products
+  useEffect(() => {
+    if (currentView !== 'products') return;
+    fetchJson('/products/')
+      .then(setProducts)
+      .catch(() => showAlert('Failed to load products.'));
+  }, [currentView]);
+
+  // Load Activities
+  useEffect(() => {
+    if (currentView !== 'studentActivities' || !selectedStudent?.id) return;
+    fetchJson(`/students/${selectedStudent.id}/activities/`)
+      .then(setActivityList)
+      .catch(() => showAlert('Failed to load activities.'));
+  }, [currentView, selectedStudent?.id]);
 
   return (
     <div className="app">
