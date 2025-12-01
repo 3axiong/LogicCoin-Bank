@@ -3,7 +3,8 @@ import { instructors } from '../data/mockData';
 
 
 const InstructorPortal = ({ onBack, onLogout }) => {
-  const [currentView, setCurrentView] = useState('welcome');
+  const [currentView, setCurrentView] = useState(() => {
+  return localStorage.getItem("logiccoin_instructor_view") || "welcome";});
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [currentInstructor] = useState(instructors[0]);
@@ -46,6 +47,9 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
     return JSON.parse(text);
   };
+
+  useEffect(() => {
+  localStorage.setItem("logiccoin_instructor_view", currentView);}, [currentView]);
 
   const showAlert = (message) => setAlert({ open: true, message });
   const closeAlert = () => setAlert({ open: false, message: '' });
@@ -516,7 +520,15 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             Products Settings
           </button>
           {onLogout && (
-            <button className="nav-item" onClick={onLogout}>Logout</button>
+            <button
+              className="nav-item"
+              onClick={() => {
+                localStorage.removeItem("logiccoin_instructor_view");
+                onLogout();
+              }}
+            >
+              Logout
+            </button>
           )}
         </nav>
       </header>

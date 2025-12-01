@@ -1,13 +1,25 @@
 
-import React, { useState, useMemo, useEffect } from "react";
-import { students as seedStudents } from "../data/mockData";
+export default function StudentPortal({ user, onLogout, onBack }) {
+  const [currentView, setCurrentView] = useState(() => {
+  return localStorage.getItem("logiccoin_student_view") || "welcome";});
 
-// Generic JSON helper 
-async function fetchJson(url, options = {}) {
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error("Network error");
-  return res.json();
-}
+  // default student (Bob) if no user provided
+  const defaultStudent = students[0] || { id: -1, name: 'Student', balance: 0 };
+  const [currentStudent, setCurrentStudent] = useState(
+    user
+      ? {
+          id: user.id ?? defaultStudent.id,
+          name: user.name ?? defaultStudent.name,
+          balance: user.available_coins ?? defaultStudent.balance,
+          email: user.email ?? defaultStudent.email,
+        }
+      : defaultStudent
+  );
+
+  const [balance, setBalance] = useState(currentStudent.balance ?? 0);
+  
+  useEffect(() => {
+  localStorage.setItem("logiccoin_student_view", currentView);}, [currentView]);
 
 export default function StudentPortal({ user, onLogout, onBack }) {
   const initialStudent = useMemo(() => {
@@ -247,7 +259,13 @@ export default function StudentPortal({ user, onLogout, onBack }) {
           <NavButton id="activities">Account Activities</NavButton>
           <button className="nav-item">Contact Instructor</button>
           {onLogout && (
-            <button className="nav-item" onClick={onLogout}>
+            <button
+              className="nav-item"
+              onClick={() => {
+                localStorage.removeItem("logiccoin_student_view");
+                onLogout();
+              }}
+            >
               Logout
             </button>
           )}
