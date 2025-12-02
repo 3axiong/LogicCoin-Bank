@@ -1,25 +1,6 @@
-
-export default function StudentPortal({ user, onLogout, onBack }) {
-  const [currentView, setCurrentView] = useState(() => {
-  return localStorage.getItem("logiccoin_student_view") || "welcome";});
-
-  // default student (Bob) if no user provided
-  const defaultStudent = students[0] || { id: -1, name: 'Student', balance: 0 };
-  const [currentStudent, setCurrentStudent] = useState(
-    user
-      ? {
-          id: user.id ?? defaultStudent.id,
-          name: user.name ?? defaultStudent.name,
-          balance: user.available_coins ?? defaultStudent.balance,
-          email: user.email ?? defaultStudent.email,
-        }
-      : defaultStudent
-  );
-
-  const [balance, setBalance] = useState(currentStudent.balance ?? 0);
-  
-  useEffect(() => {
-  localStorage.setItem("logiccoin_student_view", currentView);}, [currentView]);
+import React, { useState, useEffect, useMemo } from "react";
+import { students as seedStudents } from "../data/mockData";
+import { fetchJson } from "../utils/api";
 
 export default function StudentPortal({ user, onLogout, onBack }) {
   const initialStudent = useMemo(() => {
@@ -48,9 +29,15 @@ export default function StudentPortal({ user, onLogout, onBack }) {
     };
   }, [user]);
 
-  const [currentView, setCurrentView] = useState("welcome");
-  const [currentStudent, setCurrentStudent] = useState(initialStudent);
+  const [currentView, setCurrentView] = useState(() => {
+    return localStorage.getItem("logiccoin_student_view") || "welcome";
+  });
 
+  useEffect(() => {
+    localStorage.setItem("logiccoin_student_view", currentView);
+  }, [currentView]);
+
+  const [currentStudent, setCurrentStudent] = useState(initialStudent);
   const [products, setProducts] = useState([]);
   const [studentActivities, setStudentActivities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -62,12 +49,10 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   const balance = currentStudent?.balance ?? 0;
   const studentId = currentStudent?.id ?? -1;
 
-  // Keep currentStudent synced if user / initialStudent changes
   useEffect(() => {
     setCurrentStudent(initialStudent);
   }, [initialStudent]);
 
-  // --- Load products when Products view is active ---
   useEffect(() => {
     if (currentView !== "products") return;
     setLoading(true);
@@ -77,7 +62,6 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       .finally(() => setLoading(false));
   }, [currentView]);
 
-  // --- Load activities when Activities view is active ---
   useEffect(() => {
     if (!studentId || currentView !== "activities") return;
     setLoading(true);
@@ -87,7 +71,6 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       .finally(() => setLoading(false));
   }, [currentView, studentId]);
 
-  // --- Purchase flow  ---
   const handlePurchase = async (product) => {
     if (!currentStudent?.id) {
       alertMsg("No student found.");
@@ -112,23 +95,19 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         }),
       });
 
-      // Update balance from server response
       setCurrentStudent((s) =>
         s ? { ...s, balance: Number(created.balance ?? s.balance ?? 0) } : s
       );
-      // Prepend new activity
       setStudentActivities((prev) => [created, ...(prev || [])]);
 
       alertMsg(
         `Successfully purchased ${product.name} for ${product.price} coins!`
       );
-      setCurrentView("activities"); // Same UX as main after purchase
+      setCurrentView("activities");
     } catch (e) {
       alertMsg(e?.message || "Failed to complete purchase.");
     }
   };
-
-  // --- Views with UI matching main branch ---
 
   const ProductsView = () => (
     <div>
@@ -224,22 +203,18 @@ export default function StudentPortal({ user, onLogout, onBack }) {
 
   return (
     <div className="app">
-      {/* HEADER – copied from main, wired to your state */}
       <header className="header">
         {currentView !== "welcome" && (
           <button
             className="back-button"
             onClick={() => {
-              // First preference: navigate to the portal's Welcome view
               if (currentView !== "welcome") {
                 setCurrentView("welcome");
                 return;
               }
-              // If already on welcome, defer to parent onBack if provided
               if (typeof onBack === "function") {
                 return onBack();
               }
-              // Otherwise try browser history then fallback to root
               if (
                 typeof window !== "undefined" &&
                 window.history &&
@@ -277,7 +252,6 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         </div>
       </header>
 
-      {/* Your notice bar, doesn't affect layout */}
       {notice && (
         <div
           className="alert"
@@ -288,7 +262,6 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         </div>
       )}
 
-      {/* WELCOME PAGE – same layout/classes as main */}
       {currentView === "welcome" && (
         <div className="main-content">
           <div className="left-section">
@@ -330,7 +303,6 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         </div>
       )}
 
-      {/* PRODUCTS + ACTIVITIES PAGES – wrapped in same containers as main */}
       {currentView === "products" && (
         <div className="products-container">
           <ProductsView />
