@@ -112,11 +112,11 @@ now exiting InteractiveConsole...
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "railway"),
-        "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "pKQdQqXgNPpGzZXKsPuWQkcSGrFaQiyx"),
-        "HOST": os.environ.get("DB_HOST", "yamabiko.proxy.rlwy.net"),
-        "PORT": os.environ.get("DB_PORT", "42017"),
+        "NAME": os.environ.get("DB_NAME", "railway"), # Good
+        "USER": os.environ.get("DB_USER", "postgres"), # Good 
+        "PASSWORD": os.environ.get("DB_PASSWORD", "lpUlaUxvMpShdwNZfLBOQsLHSPzVzFuN"), # Good
+        "HOST": os.environ.get("DB_HOST", "interchange.proxy.rlwy.net"), #Good
+        "PORT": os.environ.get("DB_PORT", "29891"), #Good 
     }
 }
 
