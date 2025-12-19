@@ -34,18 +34,24 @@ class Student(models.Model):
 		return f"{self.email} ({self.available_coins} coins)"
 	
 class Instructors(models.Model):
-	class Meta:
-		db_table = 'instructors'
+    class Meta:
+        db_table = 'instructors'
 
-	# Unique id for each user (auto primary key)
-	id = models.AutoField(primary_key=True)
-	name = models.CharField(max_length=100)
-	password = models.CharField(max_length=200)
-	# Class and user information
-	email = models.EmailField(max_length=100, unique=True)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    password = models.CharField(max_length=200)
+    email = models.EmailField(max_length=100, unique=True)
 
-	def __str__(self):
-		return f"{self.email}"
+    def save(self, *args, **kwargs):
+        if self.password:
+            try:
+                identify_hasher(self.password)  # already hashed?
+            except Exception:
+                self.password = make_password(self.password)
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.email}"
 
 # Product table
 class Product(models.Model):
