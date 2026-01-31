@@ -115,7 +115,7 @@ DATABASES = {
         "NAME": os.environ.get("DB_NAME", "railway"), # Good
         "USER": os.environ.get("DB_USER", "postgres"), # Good 
         "PASSWORD": os.environ.get("DB_PASSWORD", "ASbddbqOZEhHJrSOvmYwAFXrqTPvHoVl"), # Good
-        "HOST": os.environ.get("DB_HOST", "interchange.proxy.rlwy.net"), #Good
+        "HOST": os.environ.get("DB_HOST", "nozomi.proxy.rlwy.net"), #Good
         "PORT": os.environ.get("DB_PORT", "57438"), #Good 
     }
 }
