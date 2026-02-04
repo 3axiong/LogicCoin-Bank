@@ -6,7 +6,8 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   return localStorage.getItem("logiccoin_student_view") || "welcome";});
 
   // default student (Bob) if no user provided
-  const defaultStudent = students[0] || { id: -1, name: 'Student', balance: 0 };
+  const defaultStudent = { id: -1, name: "Student", balance: 0, email: "" };
+  
   const [currentStudent, setCurrentStudent] = useState(
     user
       ? {
