@@ -38,6 +38,7 @@ $ python manage.py runserver
 def register_student(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
+
     try:
         data = json.loads(request.body.decode('utf-8'))
     except Exception:
@@ -47,7 +48,7 @@ def register_student(request):
     email = data.get('email')
     password = data.get('password')
     coins = int(data.get('available_coins', 0))
-	section = (data.get('section') or '').strip() # newly added
+    section = (data.get('section') or '').strip()
 
     if not all([name, email, password]):
         return JsonResponse({'error': 'Missing required fields'}, status=400)
@@ -60,8 +61,9 @@ def register_student(request):
         email=email,
         password=make_password(password),
         available_coins=coins,
-		section=section, # newly added
+        section=section,
     )
+
     return JsonResponse({'message': 'registered', 'id': s.id}, status=201)
 
 @csrf_exempt
