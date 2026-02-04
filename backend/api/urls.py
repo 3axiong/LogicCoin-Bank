@@ -7,6 +7,7 @@ urlpatterns = [
     path('balance', views.coinbalance, name='balance'),
     path('awardCoins', views.awardCoins, name='awardCoins'),
     path('transaction', views.transaction, name='transaction'),
+    path("leaderboard", views.leaderboard, name="leaderboard"), # newly added
     path('register_student', views.register_student, name='register_student'),
     path('register_instructor', views.register_instructor, name='register_instructor'),
     path('login', views.login, name='login'),
