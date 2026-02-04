@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 //import { students, products, activities } from '../data/mockData';
 
-const [products, setProducts] = useState([]);
-const [activities, setActivities] = useState([]);
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState("");
-
 export default function StudentPortal({ user, onLogout, onBack }) {
   const [currentView, setCurrentView] = useState(() => {
   return localStorage.getItem("logiccoin_student_view") || "welcome";});
@@ -24,42 +19,18 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   );
 
   const [balance, setBalance] = useState(currentStudent.balance ?? 0);
+
+  const [products, setProducts] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   
   useEffect(() => {
   localStorage.setItem("logiccoin_student_view", currentView);}, [currentView]);
 
   useEffect(() => {
-  const load = async () => {
-    if (!currentStudent?.id || currentStudent.id === -1) return;
-
-    try {
-      setLoading(true);
-      setError("");
-      
-      const prodRes = await fetch("http://localhost:8000/products");
-      const prodJson = await prodRes.json();
-      if (!prodRes.ok) throw new Error(prodJson?.error || "Failed to load products");
-      setProducts(Array.isArray(prodJson) ? prodJson : []);
-
-      const actRes = await fetch(`http://localhost:8000/activities?studentId=${currentStudent.id}`);
-      const actJson = await actRes.json();
-      if (!actRes.ok) throw new Error(actJson?.error || "Failed to load activities");
-      setActivities(Array.isArray(actJson) ? actJson : []);
-
-    } catch (e) {
-      setError(e.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  load();
-}, [currentStudent?.id]);
-
-
-  useEffect(() => {
     if (user) {
-      setCurrentStudent(prev => ({
+      setCurrentStudent((prev) => ({
         ...prev,
         id: user.id ?? prev.id,
         name: user.name ?? prev.name,
@@ -70,64 +41,95 @@ export default function StudentPortal({ user, onLogout, onBack }) {
     }
   }, [user]);
 
+
+  useEffect(() => {
+    const load = async () => {
+      if (!currentStudent?.id || currentStudent.id === -1) return;
+
+      try {
+        setLoading(true);
+        setError("");
+
+        const prodRes = await fetch("http://localhost:8000/products/");
+        const prodJson = await prodRes.json();
+        if (!prodRes.ok) throw new Error(prodJson?.error || "Failed to load products");
+        setProducts(Array.isArray(prodJson) ? prodJson : []);
+
+        const actRes = await fetch(
+          `http://localhost:8000/students/${currentStudent.id}/activities/`
+        );
+        const actJson = await actRes.json();
+        if (!actRes.ok) throw new Error(actJson?.error || "Failed to load activities");
+        setActivities(Array.isArray(actJson) ? actJson : []);
+      } catch (e) {
+        setError(e.message || "Network error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [currentStudent?.id]);
+
   //const studentActivities = activities.filter(a => a.studentId === currentStudent.id);
   const studentActivities = activities;
 
   const handlePurchase = async (product) => {
-  if ((balance ?? 0) < product.price) {
-    alert(
-      `Insufficient balance! You need ${product.price} coins but only have ${balance} coins.`
-    );
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError("");
-
-    const res = await fetch("http://localhost:8000/purchase", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        studentId: currentStudent.id,
-        productId: product.id,
-      }),
-    });
-
-    const json = await res.json();
-
-    if (!res.ok) {
-      throw new Error(json?.error || "Purchase failed");
-    }
-    const newBalance = json.newBalance;
-
-    setBalance(newBalance);
-    setCurrentStudent((prev) => ({
-      ...prev,
-      balance: newBalance,
-    }));
-
-    const actRes = await fetch(
-      `http://localhost:8000/activities?studentId=${currentStudent.id}`
-    );
-    const actJson = await actRes.json();
-
-    if (actRes.ok) {
-      setActivities(Array.isArray(actJson) ? actJson : []);
+    if ((balance ?? 0) < product.price) {
+      alert(
+        `Insufficient balance! You need ${product.price} coins but only have ${balance} coins.`
+      );
+      return;
     }
 
-    alert(
-      `Successfully purchased ${product.name} for ${product.price} coins!`
-    );
-    setCurrentView("activities");
-  } catch (e) {
-    alert(e.message || "Purchase error");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("http://localhost:8000/purchases/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId: currentStudent.id,
+          productId: product.id,
+          quantity: 1,
+          description: `Purchase ${product.name}`,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error || "Purchase failed");
+      }
+
+      const newBalance = json.balance;
+
+      setBalance(newBalance);
+      setCurrentStudent((prev) => ({
+        ...prev,
+        balance: newBalance,
+      }));
+
+      const actRes = await fetch(
+        `http://localhost:8000/students/${currentStudent.id}/activities/`
+      );
+      const actJson = await actRes.json();
+
+      if (actRes.ok) {
+        setActivities(Array.isArray(actJson) ? actJson : []);
+      }
+
+      alert(`Successfully purchased ${product.name} for ${product.price} coins!`);
+      setCurrentView("activities");
+    } catch (e) {
+      alert(e.message || "Purchase error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Welcome, Products and Activities views adapted from test.js
   const WelcomeView = () => (
