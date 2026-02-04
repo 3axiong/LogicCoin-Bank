@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 export default function ASULeaderboard() {
   const ASU = {
@@ -15,7 +15,7 @@ export default function ASULeaderboard() {
   };
 
   
-  const data = [
+  /*const data = [
     { id: 1, name: "Alexa Quijano", coins: 240, section: "EEE120-001" },
     { id: 2, name: "Ethan Xiong", coins: 220, section: "EEE120-002" },
     { id: 3, name: "Zachary Jeantete", coins: 205, section: "EEE120-001" },
@@ -26,9 +26,38 @@ export default function ASULeaderboard() {
     { id: 8, name: "Student Eight", coins: 160, section: "EEE120-002" },
     { id: 9, name: "Student Nine", coins: 158, section: "EEE120-001" },
     { id: 10, name: "Student Ten", coins: 154, section: "EEE120-003" },
-  ];
+  ]; */
+
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [sectionFilter, setSectionFilter] = useState("ALL");
+  
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch("http://localhost:8000/leaderboard");
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json?.error || "Failed to load leaderboard");
+        }
+
+        setData(Array.isArray(json) ? json : []);
+      } catch (e) {
+        setError(e?.message || "Network error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
 
   const sections = useMemo(() => {
     const set = new Set(data.map(s => s.section).filter(Boolean));
