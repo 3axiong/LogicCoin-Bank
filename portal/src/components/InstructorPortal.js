@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { instructors } from '../data/mockData';
 
 
 const InstructorPortal = ({ onBack, onLogout }) => {
@@ -7,7 +6,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   return localStorage.getItem("logiccoin_instructor_view") || "welcome";});
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
-  const [currentInstructor] = useState(instructors[0]);
+  const currentInstructor = { name: "Instructor" };
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productFilter, setProductFilter] = useState('');
@@ -23,12 +22,6 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const API_BASE = 'http://127.0.0.1:8000';
   const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
 
-  // const fetchJson = async (url, options) => {
-  //   const fullUrl = api(url);         
-  //   const res = await fetch(fullUrl, options);
-  //   if (!res.ok) throw new Error(`HTTP ${res.status} for ${fullUrl}`);
-  //   return res.json();
-  // };
   const fetchJson = async (url, options) => {
     const fullUrl = api(url);
     const res = await fetch(fullUrl, options);
