@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { fetchJson } from "./api";
 
 
 const InstructorPortal = ({ onBack, onLogout }) => {
@@ -18,28 +19,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const [studentList, setStudentList] = useState([]);
   const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
   const [alert, setAlert] = useState({ open: false, message: '' });
-  
-  const API_BASE = 'http://127.0.0.1:8000';
-  const api = (path) => (path.startsWith('http') ? path : `${API_BASE}${path}`);
 
-  const fetchJson = async (url, options) => {
-    const fullUrl = api(url);
-    const res = await fetch(fullUrl, options);
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} for ${fullUrl}`);
-    }
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      return null;
-    }
-
-    const text = await res.text();
-    if (!text) {
-      return null;
-    }
-
-    return JSON.parse(text);
-  };
 
   useEffect(() => {
   localStorage.setItem("logiccoin_instructor_view", currentView);}, [currentView]);
@@ -72,7 +52,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const saveTransaction = async ({ amount }) => {
     if (!editingTxn) return;
     try {
-      const updated = await fetchJson(`/purchases/${editingTxn.id}/`, {
+      const updated = await fetchJson(`/api/purchases/${editingTxn.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: Number(amount) }),
@@ -93,7 +73,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     const act = activity ?? editingTxn;
     if (!act || act.refunded) return;
     try {
-      const updated = await fetchJson(`/purchases/${act.id}/`, {
+      const updated = await fetchJson(`/api/purchases/${act.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refund: true }),
@@ -124,7 +104,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     try {
       if (editingProduct?.id) {
         // update
-        const updated = await fetchJson(`/products/${editingProduct.id}/`, {
+        const updated = await fetchJson(`/api/products/${editingProduct.id}/`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -132,7 +112,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         setProducts(prev => prev.map(p => (p.id === editingProduct.id ? updated : p)));
       } else {
         // create
-        const created = await fetchJson(`/products/create/`, {
+        const created = await fetchJson(`/api/products/create/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -149,7 +129,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     if (!product?.id) return;
 
     try {
-      await fetchJson(`/products/${product.id}/`, {
+      await fetchJson(`/api/products/${product.id}/`, {
         method: 'DELETE',
       });
 
@@ -470,7 +450,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   // Load Students
   useEffect(() => {
     if (currentView !== 'students') return;
-    fetchJson('/students/')
+    fetchJson('/api/students/')
       .then(setStudentList)
       .catch(() => showAlert('Failed to load students.'));
   }, [currentView]);
@@ -478,7 +458,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   // Load Products
   useEffect(() => {
     if (currentView !== 'products') return;
-    fetchJson('/products/')
+    fetchJson('/api/products/')
       .then(setProducts)
       .catch(() => showAlert('Failed to load products.'));
   }, [currentView]);
@@ -486,7 +466,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   // Load Activities
   useEffect(() => {
     if (currentView !== 'studentActivities' || !selectedStudent?.id) return;
-    fetchJson(`/students/${selectedStudent.id}/activities/`)
+    fetchJson(`/api/students/${selectedStudent.id}/activities/`)
       .then(setActivityList)
       .catch(() => showAlert('Failed to load activities.'));
   }, [currentView, selectedStudent?.id]);

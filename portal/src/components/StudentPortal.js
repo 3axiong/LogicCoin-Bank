@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { fetchJson } from "./api";
 
-async function fetchJson(url, options = {}) {
-  const res = await fetch(url, options);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.error || "Request failed");
-  return data;
-}
 
 export default function StudentPortal({ user, onLogout, onBack }) {
   const [dbProducts, setDbProducts] = useState([]);
@@ -32,7 +27,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
   useEffect(() => {
     if (currentView !== "products") return;
     setLoading(true);
-    fetchJson("/products/")
+    fetchJson("/api/products/")
       .then(setDbProducts)
       .finally(() => setLoading(false));
   }, [currentView]);
@@ -41,7 +36,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
     if (currentView !== "activities") return;
     if (!currentStudent?.id || currentStudent.id === -1) return;
     setLoading(true);
-    fetchJson(`/students/${currentStudent.id}/activities/`)
+    fetchJson(`/api/students/${currentStudent.id}/activities/`)
       .then(setDbActivities)
       .finally(() => setLoading(false));
   }, [currentView, currentStudent?.id]);
@@ -72,7 +67,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
 
       setLoading(true);
 
-      const created = await fetchJson("/purchases/create/", {
+      const created = await fetchJson("/api/purchases/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

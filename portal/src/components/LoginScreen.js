@@ -8,10 +8,10 @@ export default function LoginScreen({ role, onBack, onLogin }) {
   e.preventDefault();
 
   try {
-    const res = await fetch("http://localhost:8000/login", {
+    const res = await fetch("/api/login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, role }),
     });
 
     const data = await res.json();

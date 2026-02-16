@@ -1,24 +1,22 @@
 from django.urls import path
 from . import views
 
-# Any route added to views.py must also be added here as a path
-
 urlpatterns = [
-    path('balance', views.coinbalance, name='balance'),
-    path('awardCoins', views.awardCoins, name='awardCoins'),
-    path('transaction', views.transaction, name='transaction'),
-    path('register_student', views.register_student, name='register_student'),
-    path('register_instructor', views.register_instructor, name='register_instructor'),
-    path('login', views.login, name='login'),
-    
-    path("students/", views.students_list, name="students_list"),
-    path("products/", views.products_list, name="products_list"),
-    path("students/<int:student_id>/activities/", views.student_activities, name="student_activities"),
-        # Products CRUD (minimal)
-    path('products/create/', views.create_product, name='create_product'),
-    path('products/<int:product_id>/', views.update_product, name='update_product'),
+    path("api/balance/", views.coinbalance, name="balance"),
+    path("api/awardCoins/", views.awardCoins, name="awardCoins"),
+    path("api/transaction/", views.transaction, name="transaction"),
 
-    # Purchases
-    path('purchases/create/', views.create_purchase, name='create_purchase'),
-    path('purchases/<int:purchase_id>/', views.update_purchase, name='update_purchase'),
+    path("api/register_student/", views.register_student, name="register_student"),
+    path("api/register_instructor/", views.register_instructor, name="register_instructor"),
+    path("api/login/", views.login, name="login"),
+
+    path("api/students/", views.students_list, name="students_list"),
+    path("api/products/", views.products_list, name="products_list"),
+    path("api/students/<int:student_id>/activities/", views.student_activities, name="student_activities"),
+
+    path("api/products/create/", views.create_product, name="create_product"),
+    path("api/products/<int:product_id>/", views.update_product, name="update_product"),
+
+    path("api/purchases/create/", views.create_purchase, name="create_purchase"),
+    path("api/purchases/<int:purchase_id>/", views.update_purchase, name="update_purchase"),
 ]
