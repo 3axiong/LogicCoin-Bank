@@ -487,3 +487,26 @@ def student_activities(request, student_id: int):
     qs = Purchase.objects.filter(student_id=student_id).order_by("-date")
     data = [_activity_json(x) for x in qs]
     return JsonResponse(data, safe=False)
+
+@require_GET
+def leaderboard(request):
+    section = (request.GET.get("section") or "").strip()
+
+    qs = Student.objects.all()
+
+    if hasattr(Student, "section") and section and section.upper() != "ALL":
+        qs = qs.filter(section=section)
+
+    qs = qs.order_by("-available_coins", "name")
+
+    data = [
+        {
+            "id": s.id,
+            "name": s.name,
+            "coins": s.available_coins,
+            "section": getattr(s, "section", "") or "",
+        }
+        for s in qs
+    ]
+
+    return JsonResponse(data, safe=False)
