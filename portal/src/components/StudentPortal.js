@@ -17,13 +17,29 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       ? {
           id: user.id ?? defaultStudent.id,
           name: user.name ?? defaultStudent.name,
-          balance: user.available_coins ?? defaultStudent.balance,
+          balance: defaultStudent.balance,
           email: user.email ?? defaultStudent.email,
         }
       : defaultStudent
   );
 
-  const [balance, setBalance] = useState(currentStudent.balance ?? 0);
+  const [balance, setBalance] = useState(0);
+  const syncBalanceFromServer = async () => {
+  if (!user?.email) return;
+  try {
+    const data = await fetchJson(`/api/balance/?email=${encodeURIComponent(user.email)}`);
+    if (data?.available_coins != null) {
+      setBalance(data.available_coins);
+      setCurrentStudent(prev => ({ ...prev, balance: data.available_coins }));
+    }
+  } catch (e) {
+    console.error("Failed to sync balance:", e);
+  }
+};
+
+useEffect(() => {
+  syncBalanceFromServer();
+}, [user?.email]);
   useEffect(() => {
     if (currentView !== "products") return;
     setLoading(true);
@@ -51,9 +67,9 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         id: user.id ?? prev.id,
         name: user.name ?? prev.name,
         email: user.email ?? prev.email,
-        balance: user.available_coins ?? prev.balance,
+        //balance: user.available_coins ?? prev.balance,
       }));
-      if (user.available_coins != null) setBalance(user.available_coins);
+      //if (user.available_coins != null) setBalance(user.available_coins);
     }
   }, [user]);
 
@@ -81,6 +97,7 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       // update UI from server response
       setBalance(created.balance);
       setCurrentStudent(prev => ({ ...prev, balance: created.balance }));
+      await syncBalanceFromServer();
 
       // prepend new activity into UI list
       setDbActivities(prev => [created, ...(prev || [])]);
