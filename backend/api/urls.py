@@ -5,6 +5,7 @@ urlpatterns = [
     path("api/balance/", views.coinbalance, name="balance"),
     path("api/awardCoins/", views.awardCoins, name="awardCoins"),
     path("api/transaction/", views.transaction, name="transaction"),
+    path("api/leaderboard/", views.leaderboard, name="leaderboard"),
 
     path("api/register_student/", views.register_student, name="register_student"),
     path("api/register_instructor/", views.register_instructor, name="register_instructor"),
