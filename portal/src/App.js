@@ -42,9 +42,10 @@ function App() {
         role={role}
         onBack={() => setView('home')}
         onLogin={(data) => {
-          setCurrentUser(data);
-          localStorage.setItem('logiccoin_user', JSON.stringify(data));
-          setView(data.role);              
+          const minimalUser = { id: data.id, name: data.name, email: data.email, role: data.role };
+          setCurrentUser(minimalUser);
+          localStorage.setItem('logiccoin_user', JSON.stringify(minimalUser));
+          setView(minimalUser.role);             
         }}
       />
     );
