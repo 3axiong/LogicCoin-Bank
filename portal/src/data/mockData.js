@@ -1,11 +1,12 @@
 // Mock data for LogicCoin Bank
 
 export const students = [
-  { id: 1, name: "Bob", balance: 300 },
-  { id: 2, name: "Richard", balance: 250 },
-  { id: 3, name: "Student 03", balance: 180 },
-  { id: 4, name: "Student 04", balance: 420 }
+  { id: 1, name: "Bob", balance: 300, email: "bob@test.com", password: "1234" },
+  { id: 2, name: "Richard", balance: 250, email: "richard@test.com", password: "1234" },
+  { id: 3, name: "Student 03", balance: 180, email: "student3@test.com", password: "1234" },
+  { id: 4, name: "Student 04", balance: 420, email: "student4@test.com", password: "1234" }
 ];
+
 
 export const products = [
   {

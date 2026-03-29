@@ -96,18 +96,17 @@ export default function StudentPortal({ user, onLogout, onBack }) {
 
 
   // Welcome, Products and Activities views adapted from test.js
-  const WelcomeView = () => (
-    <section style={{ textAlign: 'center', marginTop: 10 }}>
-      <p>Welcome back, {user?.name || currentStudent?.name || 'Student'}!</p>
-      <p style={{ marginTop: 6 }}>Explore the shop to spend coins or view your recent activity.</p>
-      {/* single Use Coins button is provided via the nav; keep layout clean here */}
-    </section>
-  );
+const WelcomeView = () => (
+  <section className="portal-message">
+    <p>Welcome back, {user?.name || currentStudent?.name || 'Student'}!</p>
+    <p>Explore the shop to spend coins or view your recent activity.</p>
+  </section>
+);
 
   const ProductsView = () => (
     <div>
-      <h1 className="page-title">Products' List</h1>
-      <div className="balance-title" style={{ textAlign: 'center', marginBottom: 20 }}>
+      <h1 className="page-title">Products list</h1>
+      <div className="balance-title">
         Your Current Balance: <span className="balance-highlight">{balance} coins</span>
       </div>
       <div className="products-grid">
@@ -146,12 +145,12 @@ export default function StudentPortal({ user, onLogout, onBack }) {
 
     return (
       <div>
-        <h1 className="page-title">Account Activities</h1>
+        <h1 className="page-title">Account activities</h1>
 
         {loading ? (
-          <div style={{ textAlign: "center" }}>Loading…</div>
+          <div className="status-message">Loading…</div>
         ) : list.length === 0 ? (
-          <div style={{ textAlign: "center", opacity: 0.7 }}>No recent activity.</div>
+          <div className="status-message muted">No recent activity.</div>
         ) : (
           <div className="activities-table">
             {list.map(activity => (
@@ -210,10 +209,9 @@ export default function StudentPortal({ user, onLogout, onBack }) {
           </button>
         )}
 
-        <nav className="nav-menu" style={{ margin: '0 auto' }}>
+        <nav className="nav-menu centered">
           <NavButton id="products">Use Coins</NavButton>
           <NavButton id="activities">Account Activities</NavButton>
-          <button className="nav-item">Contact Instructor</button>
           {onLogout && (
             <button
               className="nav-item"
@@ -238,15 +236,14 @@ export default function StudentPortal({ user, onLogout, onBack }) {
         <div className="main-content">
           <div className="left-section">
             <div className="logo-section">
-              <div className="logo-circle">
-                <div className="logo-text">ASU LOGO</div>
-                <div className="globe-icon" aria-hidden>🌐</div>
-              </div>
+            <div className="logo-circle">
+              <img src="/asu_logo.png" alt="ASU logo" className="logo-image" />
+            </div>
             </div>
           </div>
 
           <div className="right-section">
-            <div className="welcome-text">Welcome To</div>
+            <div className="welcome-text">Welcome to</div>
             <h1 className="main-title">LogicCoin<br/>Bank Portal</h1>
 
             <div className="center-balance">
@@ -255,11 +252,10 @@ export default function StudentPortal({ user, onLogout, onBack }) {
               <div className="balance-currency">coins</div>
             </div>
 
-            <div style={{ textAlign: 'center' }}>
+            <div className="welcome-cta-row">
               <button className="cta-button" onClick={() => setCurrentView('products')}>Use coins</button>
             </div>
 
-            <div className="page-indicators" />
           </div>
         </div>
       )}

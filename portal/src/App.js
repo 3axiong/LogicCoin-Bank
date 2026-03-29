@@ -4,6 +4,7 @@ import StudentPortal from './components/StudentPortal';
 import InstructorPortal from './components/InstructorPortal';
 import ASULeaderboard from "./components/ASULeaderboard";
 import LoginScreen from "./components/LoginScreen";
+import ASUShell from "./components/ASUShell";
 
 function App() {
   const [view, setView] = useState(() => {
@@ -28,63 +29,84 @@ function App() {
   });
 
   if (view === 'student') return (
-    <StudentPortal user={currentUser} onLogout={() => { setCurrentUser(null); localStorage.removeItem('logiccoin_user'); setView('home'); }} />
+    <ASUShell>
+      <StudentPortal
+        user={currentUser}
+        onLogout={() => {
+          setCurrentUser(null);
+          localStorage.removeItem('logiccoin_user');
+          setView('home');
+        }}
+      />
+    </ASUShell>
   );
 
   if (view === 'instructor') return (
-    <InstructorPortal user={currentUser} onLogout={() => { setCurrentUser(null); localStorage.removeItem('logiccoin_user'); setView('home'); }} />
+    <ASUShell>
+      <InstructorPortal
+        user={currentUser}
+        onLogout={() => {
+          setCurrentUser(null);
+          localStorage.removeItem('logiccoin_user');
+          setView('home');
+        }}
+      />
+    </ASUShell>
   );
 
 
   if (view === 'login') {
     return (
-      <LoginScreen
-        role={role}
-        onBack={() => setView('home')}
-        onLogin={(data) => {
-          setCurrentUser(data);
-          localStorage.setItem('logiccoin_user', JSON.stringify(data));
-          setView(data.role);              
-        }}
-      />
+      <ASUShell>
+        <LoginScreen
+          role={role}
+          onBack={() => setView('home')}
+          onLogin={(data) => {
+            setCurrentUser(data);
+            localStorage.setItem('logiccoin_user', JSON.stringify(data));
+            setView(data.role);
+          }}
+        />
+      </ASUShell>
     );
   }
 
   return (
-    <div className="app">
-      <div className="main-content">
-        <div className="left-section">
-          <div className="logo-section">
-            <div className="logo-circle">
-              <img src="/asu_logo.png" alt="ASU Logo" className="logo-image" />
-              <div className="globe-icon">🌐</div>
+    <ASUShell>
+      <div className="app">
+        <div className="main-content">
+          <div className="left-section">
+            <div className="logo-section">
+              <div className="logo-circle">
+                <img src="/asu_logo.png" alt="ASU logo" className="logo-image" />
+              </div>
+            </div>
+          </div>
+          <div className="right-section">
+            <div className="welcome-text">Welcome to</div>
+            <h1 className="main-title">
+              LogicCoin<br />
+              Bank
+            </h1>
+            <div className="welcome-cta-row">
+              <button
+                className="cta-button"
+                onClick={() => { setRole('student'); setView('login'); }}
+              >
+                Student portal
+              </button>
+              <button
+                className="cta-button"
+                onClick={() => { setRole('instructor'); setView('login'); }}
+              >
+                Instructor portal
+              </button>
             </div>
           </div>
         </div>
-        <div className="right-section">
-          <div className="welcome-text">Welcome To</div>
-          <h1 className="main-title">
-            LogicCoin<br />
-            Bank
-          </h1>
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <button 
-              className="cta-button" 
-              onClick={() => { setRole('student'); setView('login'); }}
-            >
-              Student Portal
-            </button>
-            <button 
-              className="cta-button" 
-              onClick={() => { setRole('instructor'); setView('login'); }}
-            >
-              Instructor Portal
-            </button>
-          </div>
-        </div>
+        <ASULeaderboard />
       </div>
-      <ASULeaderboard />
-    </div>
+    </ASUShell>
   );
 }
 

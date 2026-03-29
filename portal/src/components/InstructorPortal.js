@@ -179,12 +179,11 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         <div className="logo-section">
           <div className="logo-circle">
             <img src="/asu_logo.png" alt="ASU Logo" className="logo-image" />
-            <div className="globe-icon">🌐</div>
           </div>
         </div>
       </div>
       <div className="right-section">
-        <div className="welcome-text">Welcome To</div>
+        <div className="welcome-text">Welcome to</div>
         <h1 className="main-title">
           LogicCoin<br />
           Bank Faculty<br />
@@ -192,10 +191,10 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         </h1>
         <div className="welcome-cta-row">
           <button className="cta-button" onClick={() => setCurrentView('students')}>
-            Students List
+            Students list
           </button>
           <button className="cta-button" onClick={() => setCurrentView('productsList')}>
-            Products List
+            Products list
           </button>
         </div>
       </div>
@@ -204,7 +203,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
   const StudentsView = () => (
     <div className="students-container">
-      <h1 className="page-title">Students List</h1>
+      <h1 className="page-title">Students list</h1>
       <div className="students-table">
         {studentList.map(student => (
           <div key={student.id} className="student-row">
@@ -232,7 +231,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
     return (
       <div className="activities-container">
-        <h1 className="page-title">{selectedStudent?.name}'s Activities</h1>
+        <h1 className="page-title">{selectedStudent?.name}'s activities</h1>
         <h2 className="page-title balance-title">
           Current Balance: <span className="balance-highlight">{selectedStudent?.balance ?? 0}</span>
         </h2>
@@ -326,7 +325,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
     return (
       <div className="students-container">
-        <h1 className="page-title">Products List</h1>
+        <h1 className="page-title">Products list</h1>
 
         <div className="filter-row">
           <label className="form-label">
@@ -399,9 +398,9 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
   const ProductsManagementView = () => (
     <div className="products-container">
-      <h1 className="page-title">Edit Products</h1>
+      <h1 className="page-title">Edit products</h1>
       <div className="add-product-container">
-        <button className="add-product-button" onClick={openAddModal}>Add Product +</button>
+        <button className="add-product-button" onClick={openAddModal}>Add product</button>
       </div>
       <div className="products-grid">
         {products.map(product => (
@@ -457,7 +456,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
 
   // Load Products
   useEffect(() => {
-    if (currentView !== 'products') return;
+    if (currentView !== 'products' && currentView !== 'productsList') return;
     fetchJson('/api/products/')
       .then(setProducts)
       .catch(() => showAlert('Failed to load products.'));
@@ -482,15 +481,15 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         {currentView === 'welcome' && (
           <div className="user-info">{currentInstructor.name}</div>
         )}
-        <nav className="nav-menu" style={{ margin: '0 auto' }}>
+        <nav className="nav-menu centered">
           <button className="nav-item" onClick={() => setCurrentView('students')}>
-            Students List
+            Students list
           </button>
           <button className="nav-item" onClick={() => setCurrentView('productsList')}>
-            Products List
+            Products list
           </button>
           <button className="nav-item" onClick={() => setCurrentView('products')}>
-            Products Settings
+            Product settings
           </button>
           {onLogout && (
             <button
@@ -629,12 +628,12 @@ const ProductModal = ({ initialValues, onClose, onSubmit }) => {
     >
       <div className="modal-panel">
         <h2 id="product-modal-title" className="modal-title">
-          {isEdit ? 'Edit Product' : 'Add New Product'}
+          {isEdit ? 'Edit product' : 'Add new product'}
         </h2>
 
         <form onSubmit={submit} className="modal-form">
           <label className="form-label">
-            Product Name
+            Product name
             <input
               type="text"
               className="form-input"
@@ -646,7 +645,7 @@ const ProductModal = ({ initialValues, onClose, onSubmit }) => {
           </label>
 
           <label className="form-label">
-            Price (Coins)
+            Price (coins)
             <input
               type="number"
               min="0"
@@ -738,7 +737,7 @@ const EditTransactionModal = ({ initialValues, onClose, onSave, onRefund }) => {
 
         <form onSubmit={submit} className="modal-form">
           <label className="form-label">
-            Paid Price (Coins)
+            Paid Price (coins)
             <input
               type="number"
               min="0"
@@ -766,7 +765,7 @@ const EditTransactionModal = ({ initialValues, onClose, onSave, onRefund }) => {
             </button>
 
             <button type="submit" className="btn-primary">
-              Save Changes
+              Save changes
             </button>
           </div>
         </form>

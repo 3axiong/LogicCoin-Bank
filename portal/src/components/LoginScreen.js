@@ -4,8 +4,32 @@ export default function LoginScreen({ role, onBack, onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  //MOCK DATA
+  const USE_MOCK = true;
+
   const handleSubmit = async (e) => {
   e.preventDefault();
+
+  if (USE_MOCK) {
+    if (role === "student") {
+      onLogin?.({
+        id: 1,
+        name: "Bob",
+        email: email || "bob@test.com",
+        available_coins: 300,
+        role: "student" 
+      });
+    } else {
+      onLogin?.({
+        id: 99,
+        name: "Instructor",
+        email: email || "instructor@test.com",
+        role: "instructor"
+      });
+    }
+    return;
+  }
+
 
   try {
     const res = await fetch("/api/login/", {
@@ -34,8 +58,7 @@ export default function LoginScreen({ role, onBack, onLogin }) {
         <div className="left-section">
           <div className="logo-section">
             <div className="logo-circle">
-              <div className="logo-text">ASU LOGO</div>
-              <div className="globe-icon">🌐</div>
+              <img src="/asu_logo.png" alt="ASU logo" className="logo-image" />
             </div>
           </div>
         </div>
@@ -46,28 +69,43 @@ export default function LoginScreen({ role, onBack, onLogin }) {
             {role === "instructor" ? "Instructor" : "Student"} Portal
           </h1>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "center" }}>
-            <input
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{ padding: "10px", borderRadius: "8px", width: "250px", border: "none" }}
-            />
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ padding: "10px", borderRadius: "8px", width: "250px", border: "none" }}
-            />
+          <form onSubmit={handleSubmit} className="login-form">
+            <label className="form-label">
+              Email
+              <input
+                type="email"
+                className="form-input"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
 
-            <button type="submit" className="cta-button">Log In</button>
-            <button type="button" className="cta-button" style={{ background: "gray" }} onClick={onBack}>
-              Back
-            </button>
+            <label className="form-label">
+              Password
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
+
+            <div className="login-actions">
+              <button type="submit" className="cta-button">
+                Log in
+              </button>
+              <button
+                type="button"
+                className="cta-button login-back-button"
+                onClick={onBack}
+              >
+                Back
+              </button>
+            </div>
           </form>
         </div>
       </div>
