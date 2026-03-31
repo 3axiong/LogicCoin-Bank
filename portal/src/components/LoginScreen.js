@@ -5,7 +5,7 @@ export default function LoginScreen({ role, onBack, onLogin }) {
   const [password, setPassword] = useState("");
 
   //MOCK DATA
-  const USE_MOCK = true;
+  const USE_MOCK = true; //TODO: disable mock login before deployment
 
   const handleSubmit = async (e) => {
   e.preventDefault();
