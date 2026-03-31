@@ -8,7 +8,7 @@ import ASUShell from "./components/ASUShell";
 
 function App() {
   const [view, setView] = useState(() => {
-    const saved = localStorage.getItem('logiccoin_user');
+    const saved = localStorage.getItem('logiccoin_user'); //TODO: Possibly need to change using local server and use server session for real login state
     if (saved) {
       try {
         const u = JSON.parse(saved);
