@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-h&0sx&y&m#*xezpmw!o%xz^6wuo_wr00e6qgjmjjaqkca$v(w%'
+SECRET_KEY = 'django-insecure-h&0sx&y&m#*xezpmw!o%xz^6wuo_wr00e6qgjmjjaqkca$v(w%' #TODO: move secret key to env var
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True #TODO: set False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"] #TODO: change this to add ASU host/domain
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", "http://127.0.0.1:5173",
@@ -35,7 +35,7 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173", "http://127.0.0.1:5173",
     "http://localhost:3000", "http://127.0.0.1:3000",
-]
+] #TODO: add HTTPS production origin
 
 # Application definition
 
@@ -60,6 +60,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+#TODO: force HTTPS in production
+#TODO: add secure cookie settings
+#TODO: add HSTS settings
+#TODO: set SECURE_PROXY_SSL_HEADER if needed
 
 ROOT_URLCONF = 'setup.urls'
 
@@ -119,6 +124,7 @@ DATABASES = {
         "PORT": os.environ.get("DB_PORT", "57438"), #Good 
     }
 }
+#TODO: remove hardcoded DB 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
