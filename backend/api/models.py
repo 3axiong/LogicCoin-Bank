@@ -14,6 +14,7 @@ class Student(models.Model):
 	# Class and user information
 	email = models.EmailField(max_length=100, unique=True)
 	available_coins = models.IntegerField(default=0)
+	section = models.CharField(max_length=50, blank=True, default="") # LB added
      
 	def save(self, *args, **kwargs):
 		if self.password:
