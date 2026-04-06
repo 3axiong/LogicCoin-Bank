@@ -6,7 +6,7 @@ import {
 } from "../data/mockData";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "";
-const USE_MOCK = true; 
+const USE_MOCK = false; // LB added
 
 export async function fetchJson(path, options = {}) {
   if (USE_MOCK) {
