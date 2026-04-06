@@ -82,6 +82,17 @@ export default function StudentPortal({ user, onLogout, onBack }) {
       setBalance(created.balance);
       setCurrentStudent(prev => ({ ...prev, balance: created.balance }));
 
+      const savedUser = localStorage.getItem("logiccoin_user"); //refresh fix
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          parsed.available_coins = created.balance;
+          localStorage.setItem("logiccoin_user", JSON.stringify(parsed));
+        } catch (e) {
+          console.error("Failed to update stored user balance", e);
+        }
+      } // refresh fix
+
       // prepend new activity into UI list
       setDbActivities(prev => [created, ...(prev || [])]);
 
