@@ -47,6 +47,7 @@ def register_student(request):
     email = data.get('email')
     password = data.get('password')
     coins = int(data.get('available_coins', 0))
+	section = (data.get('section') or '').strip() # LB added
 
     if not all([name, email, password]):
         return JsonResponse({'error': 'Missing required fields'}, status=400)
@@ -59,6 +60,7 @@ def register_student(request):
         email=email,
         password=make_password(password),
         available_coins=coins,
+		section=section # LB added
     )
     return JsonResponse({'message': 'registered', 'id': s.id}, status=201)
 
@@ -486,4 +488,22 @@ def student_activities(request, student_id: int):
         raise Http404("Student not found")
     qs = Purchase.objects.filter(student_id=student_id).order_by("-date")
     data = [_activity_json(x) for x in qs]
+    return JsonResponse(data, safe=False)
+
+@require_GET # LB added
+def leaderboard(request):
+    section = (request.GET.get("section") or "").strip()
+    qs = Student.objects.all()
+    if section and section.upper() != "ALL":
+        qs = qs.filter(section=section)
+    qs = qs.order_by("-available_coins", "name")
+    data = [
+        {
+            "id": s.id,
+            "name": s.name,
+            "coins": s.available_coins,
+            "section": s.section or "",
+        }
+        for s in qs
+    ]
     return JsonResponse(data, safe=False)
