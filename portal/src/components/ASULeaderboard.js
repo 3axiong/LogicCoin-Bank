@@ -1,20 +1,28 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react"; // LB added
+import { fetchJson } from "./api"; //LB added
 
 export default function ASULeaderboard() {
-  const data = [
-    { id: 1, name: "Alexa Quijano", coins: 240, section: "EEE120-001" },
-    { id: 2, name: "Ethan Xiong", coins: 220, section: "EEE120-002" },
-    { id: 3, name: "Zachary Jeantete", coins: 205, section: "EEE120-001" },
-    { id: 4, name: "Yosef Ossowiecki", coins: 198, section: "EEE120-003" },
-    { id: 5, name: "Alicia Baumman", coins: 190, section: "EEE120-002" },
-    { id: 6, name: "Olga Example", coins: 172, section: "EEE120-001" },
-    { id: 7, name: "Student Seven", coins: 165, section: "EEE120-003" },
-    { id: 8, name: "Student Eight", coins: 160, section: "EEE120-002" },
-    { id: 9, name: "Student Nine", coins: 158, section: "EEE120-001" },
-    { id: 10, name: "Student Ten", coins: 154, section: "EEE120-003" },
-  ];
+  const [data, setData] = useState([]); // LB added
+  const [loading, setLoading] = useState(true); // LB added
+  const [error, setError] = useState(""); // LB added
 
   const [sectionFilter, setSectionFilter] = useState("ALL");
+
+  useEffect(() => { // LB added
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const json = await fetchJson("/api/leaderboard/");
+        setData(Array.isArray(json) ? json : []);
+      } catch (e) {
+        setError(e?.message || "Failed to load leaderboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const sections = useMemo(() => {
     const set = new Set(data.map((s) => s.section).filter(Boolean));
