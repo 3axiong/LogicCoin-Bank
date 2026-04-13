@@ -399,6 +399,65 @@ textarea:focus-visible {
   z-index: 10;
 }
 
+.students-csv-actions {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.students-csv-actions-help {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #333;
+  max-width: 520px;
+}
+
+.students-export-button {
+  margin: 0;
+}
+
+.students-csv-import {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: rgba(30, 139, 92, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(30, 139, 92, 0.2);
+}
+
+.students-csv-title {
+  font-size: 1.15rem;
+  margin: 0 0 10px;
+  color: #1e8b5c;
+}
+
+.students-csv-help {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #333;
+}
+
+.students-csv-help code {
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.students-csv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+}
+
+.students-csv-form .cta-button {
+  align-self: flex-start;
+}
+
 .filter-row {
   display: flex;
   justify-content: flex-start;
@@ -984,6 +1043,9 @@ textarea:focus-visible {
   line-height: 1.5;
   margin: 0 0 20px;
   text-align: left;
+  white-space: pre-line;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
 }
 
 .product-actions {

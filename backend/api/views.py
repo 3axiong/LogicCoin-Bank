@@ -1,7 +1,11 @@
-from django.http import JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, Http404
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
+import csv
+import io
 import json
+import secrets
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 from django.db.models.deletion import ProtectedError
 from .models import Student, Product, Purchase, Instructors
@@ -47,7 +51,7 @@ def register_student(request):
     email = data.get('email')
     password = data.get('password')
     coins = int(data.get('available_coins', 0))
-	section = (data.get('section') or '').strip() # LB added
+    section = (data.get('section') or '').strip() 
 
     if not all([name, email, password]):
         return JsonResponse({'error': 'Missing required fields'}, status=400)
@@ -60,7 +64,7 @@ def register_student(request):
         email=email,
         password=make_password(password),
         available_coins=coins,
-		section=section # LB added
+        section=section, 
     )
     return JsonResponse({'message': 'registered', 'id': s.id}, status=201)
 
@@ -89,6 +93,157 @@ def register_instructor(request):
         password=make_password(password),
     )
     return JsonResponse({'message': 'registered', 'id': i.id}, status=201)
+
+
+def _normalize_canvas_student_name(raw):
+    s = (raw or "").strip().strip('"')
+    if not s:
+        return ""
+    if s.lower() == "points possible":
+        return ""
+    if "," in s:
+        last, first = [p.strip() for p in s.split(",", 1)]
+        if last and first:
+            return f"{first} {last}"
+    return s
+
+
+def _email_from_canvas_login(login_raw):
+    login = (login_raw or "").strip().strip('"')
+    if not login:
+        return ""
+    if "@" in login:
+        return login.lower()
+    return f"{login.lower()}@asu.edu"
+
+
+def _random_initial_password():
+    return secrets.token_urlsafe(14)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def import_students_csv(request):
+    if "file" not in request.FILES:
+        return JsonResponse({"error": "Missing file field (multipart form, CSV)."}, status=400)
+
+    raw = request.FILES["file"].read()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return JsonResponse({"error": "CSV must be UTF-8 encoded."}, status=400)
+
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        return JsonResponse({"error": "CSV has no header row."}, status=400)
+
+    norm_to_actual = {}
+    for f in reader.fieldnames:
+        if f is None:
+            continue
+        norm_to_actual[f.strip().lower()] = f
+
+    def resolve_col(*candidates):
+        for c in candidates:
+            act = norm_to_actual.get(c.strip().lower())
+            if act:
+                return act
+        return None
+
+    k_student = resolve_col("Student")
+    k_login = resolve_col("SIS Login ID")
+    k_section = resolve_col("Section")
+
+    if not k_student or not k_login:
+        return JsonResponse(
+            {
+                "error": "CSV must include 'Student' and 'SIS Login ID' columns (Canvas export format).",
+                "found_columns": list(reader.fieldnames),
+            },
+            status=400,
+        )
+
+    created = []
+    skipped = []
+    errors = []
+    row_num = 1
+
+    for row in reader:
+        row_num += 1
+        student_raw = (row.get(k_student) or "").strip()
+        login_raw = row.get(k_login) or ""
+        section_val = (row.get(k_section) or "").strip() if k_section else ""
+
+        if student_raw.lower() == "points possible":
+            continue
+        if not student_raw and not str(login_raw).strip():
+            continue
+
+        name = _normalize_canvas_student_name(student_raw)
+        email = _email_from_canvas_login(login_raw)
+
+        if not email:
+            errors.append({"row": row_num, "reason": "missing SIS Login ID", "student": student_raw})
+            continue
+        if not name:
+            errors.append({"row": row_num, "reason": "missing or invalid student name", "email": email})
+            continue
+
+        if Student.objects.filter(email=email).exists():
+            skipped.append({"row": row_num, "email": email, "reason": "already registered"})
+            continue
+
+        plain_password = _random_initial_password()
+        try:
+            s = Student.objects.create(
+                name=name,
+                email=email,
+                password=make_password(plain_password),
+                available_coins=0,
+                section=section_val,
+            )
+            created.append({
+                "id": s.id,
+                "name": s.name,
+                "email": s.email,
+                "initial_password": plain_password,
+            })
+        except Exception as e:
+            errors.append({"row": row_num, "email": email, "reason": str(e)})
+
+    return JsonResponse(
+        {
+            "created_count": len(created),
+            "skipped_count": len(skipped),
+            "error_count": len(errors),
+            "created": created,
+            "skipped": skipped,
+            "errors": errors,
+        }
+    )
+
+
+@require_GET
+def students_export_csv(request):
+    stamp = timezone.now().strftime("%Y%m%d_%H%M")
+    filename = f"logiccoin_students_{stamp}.csv"
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.write("\ufeff")
+    writer = csv.writer(response)
+    writer.writerow(["id", "name", "email", "section", "logic_coins"])
+    for s in Student.objects.order_by("name", "id"):
+        writer.writerow(
+            [
+                s.id,
+                s.name,
+                s.email,
+                s.section or "",
+                s.available_coins,
+            ]
+        )
+    return response
+
 
 @csrf_exempt
 def login(request):

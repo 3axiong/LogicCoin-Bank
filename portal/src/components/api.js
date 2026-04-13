@@ -142,3 +142,36 @@ export async function fetchJson(path, options = {}) {
 
   return data;
 }
+
+export async function downloadStudentsExportCsv() {
+  const url = `${API_BASE}/api/students/export_csv/`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || "Export failed");
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition");
+  let filename = "logiccoin_students_export.csv";
+  const m = cd && /filename="([^"]+)"/.exec(cd);
+  if (m) filename = m[1];
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+export async function importStudentsCsv(file) {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/students/import_csv/`, {
+    method: "POST",
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data?.error || "Import failed");
+  }
+  return data;
+}

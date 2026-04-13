@@ -11,6 +11,8 @@ urlpatterns = [
     path("api/register_instructor/", views.register_instructor, name="register_instructor"),
     path("api/login/", views.login, name="login"),
 
+    path("api/students/import_csv/", views.import_students_csv, name="import_students_csv"),
+    path("api/students/export_csv/", views.students_export_csv, name="students_export_csv"),
     path("api/students/", views.students_list, name="students_list"),
     path("api/products/", views.products_list, name="products_list"),
     path("api/students/<int:student_id>/activities/", views.student_activities, name="student_activities"),

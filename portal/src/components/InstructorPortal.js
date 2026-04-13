@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchJson } from "./api";
+import { fetchJson, importStudentsCsv, downloadStudentsExportCsv } from "./api";
 
 
 const InstructorPortal = ({ onBack, onLogout }) => {
@@ -201,28 +201,129 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     </div>
   );
 
-  const StudentsView = () => (
-    <div className="students-container">
-      <h1 className="page-title">Students list</h1>
-      <div className="students-table">
-        {studentList.map(student => (
-          <div key={student.id} className="student-row">
-            <div className="student-name">{student.name}</div>
-            <button 
-              className="view-activities-button"
-              onClick={() => {
-                setSelectedStudent(student);
-                setActivityList([]);
-                setCurrentView('studentActivities');
-              }}
-            >
-              View Activities
+  const StudentsView = () => {
+    const [importing, setImporting] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const csvInputRef = useRef(null);
+
+    const handleCsvImport = async (e) => {
+      e.preventDefault();
+      const file = csvInputRef.current?.files?.[0];
+      if (!file) {
+        showAlert('Choose a CSV file (Canvas grade export).');
+        return;
+      }
+      setImporting(true);
+      try {
+        const result = await importStudentsCsv(file);
+        const lines = [
+          `Created: ${result.created_count}`,
+          `Skipped (already in system): ${result.skipped_count}`,
+          `Row errors: ${result.error_count}`,
+        ];
+        if (result.created_count > 0 && result.created?.length) {
+          lines.push(
+            'Random initial passwords (copy now — not shown again):',
+            ...result.created.map((c) => `${c.email}  →  ${c.initial_password}`),
+          );
+        }
+        if (result.skipped_count > 0 && result.skipped?.length) {
+          lines.push(
+            'Skipped: ' + result.skipped.slice(0, 5).map((s) => `row ${s.row} ${s.email}`).join('; ')
+            + (result.skipped.length > 5 ? '…' : '')
+          );
+        }
+        if (result.error_count > 0 && result.errors?.length) {
+          lines.push(
+            result.errors.slice(0, 5).map((err) => `Row ${err.row}: ${err.reason}`).join('\n')
+            + (result.errors.length > 5 ? '\n…' : '')
+          );
+        }
+        showAlert(lines.join('\n'));
+        const list = await fetchJson('/api/students/');
+        setStudentList(list);
+        if (csvInputRef.current) csvInputRef.current.value = '';
+      } catch (err) {
+        showAlert(err?.message || 'Import failed.');
+      } finally {
+        setImporting(false);
+      }
+    };
+
+    const handleExportCsv = async () => {
+      setExporting(true);
+      try {
+        await downloadStudentsExportCsv();
+      } catch (err) {
+        showAlert(err?.message || 'Export failed.');
+      } finally {
+        setExporting(false);
+      }
+    };
+
+    return (
+      <div className="students-container">
+        <h1 className="page-title">Students list</h1>
+
+        <div className="students-csv-actions">
+          <button
+            type="button"
+            className="cta-button students-export-button"
+            onClick={handleExportCsv}
+            disabled={exporting}
+          >
+            {exporting ? 'Preparing export…' : 'Export students (CSV)'}
+          </button>
+          <p className="students-csv-actions-help">
+            Downloads all accounts with columns: id, name, email, section, and <strong>logic_coins</strong> (current balance).
+          </p>
+        </div>
+
+        <div className="students-csv-import">
+          <h2 className="students-csv-title">Import from Canvas CSV</h2>
+          <p className="students-csv-help">
+            Upload a grade export that includes columns <strong>Student</strong>, <strong>SIS Login ID</strong>, and{' '}
+            <strong>Section</strong> (e.g. DEV course export). The “Points Possible” row is skipped automatically.
+            Each new student gets email <code>asurite@asu.edu</code> unless the login already contains @.{' '}
+            A <strong>random password</strong> is generated per new account and shown once in the confirmation dialog—copy it for your records.
+          </p>
+          <form className="students-csv-form" onSubmit={handleCsvImport}>
+            <label className="form-label">
+              CSV file
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="form-input"
+                disabled={importing}
+              />
+            </label>
+            <button type="submit" className="cta-button" disabled={importing}>
+              {importing ? 'Importing…' : 'Import students'}
             </button>
-          </div>
-        ))}
+          </form>
+        </div>
+
+        <div className="students-table">
+          {studentList.map(student => (
+            <div key={student.id} className="student-row">
+              <div className="student-name">{student.name}</div>
+              <button 
+                className="view-activities-button"
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setActivityList([]);
+                  setCurrentView('studentActivities');
+                }}
+              >
+                View Activities
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const StudentActivitiesView = () => {
     const studentActivities = activityList.filter(activity => 
