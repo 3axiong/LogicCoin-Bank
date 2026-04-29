@@ -204,7 +204,32 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const StudentsView = () => {
     const [importing, setImporting] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const [importSummary, setImportSummary] = useState({
+      open: false,
+      lines: [],
+      credentials: [],
+    });
     const csvInputRef = useRef(null);
+
+    const downloadCredentialsCsv = () => {
+      if (!importSummary.credentials?.length) return;
+      const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+      const csvLines = [
+        'email,password',
+        ...importSummary.credentials.map((entry) => (
+          `${escapeCsv(entry.email)},${escapeCsv(entry.password)}`
+        )),
+      ];
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `imported-student-passwords-${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    };
 
     const handleCsvImport = async (e) => {
       e.preventDefault();
@@ -221,12 +246,6 @@ const InstructorPortal = ({ onBack, onLogout }) => {
           `Skipped (already in system): ${result.skipped_count}`,
           `Row errors: ${result.error_count}`,
         ];
-        if (result.created_count > 0 && result.created?.length) {
-          lines.push(
-            'Random initial passwords (copy now — not shown again):',
-            ...result.created.map((c) => `${c.email}  →  ${c.initial_password}`),
-          );
-        }
         if (result.skipped_count > 0 && result.skipped?.length) {
           lines.push(
             'Skipped: ' + result.skipped.slice(0, 5).map((s) => `row ${s.row} ${s.email}`).join('; ')
@@ -239,7 +258,14 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             + (result.errors.length > 5 ? '\n…' : '')
           );
         }
-        showAlert(lines.join('\n'));
+        setImportSummary({
+          open: true,
+          lines,
+          credentials: (result.created || []).map((entry) => ({
+            email: entry.email,
+            password: entry.initial_password,
+          })),
+        });
         const list = await fetchJson('/api/students/');
         setStudentList(list);
         if (csvInputRef.current) csvInputRef.current.value = '';
@@ -285,7 +311,7 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             Upload a grade export that includes columns <strong>Student</strong>, <strong>SIS Login ID</strong>, and{' '}
             <strong>Section</strong> (e.g. DEV course export). The “Points Possible” row is skipped automatically.
             Each new student gets email <code>asurite@asu.edu</code> unless the login already contains @.{' '}
-            A <strong>random password</strong> is generated per new account and shown once in the confirmation dialog—copy it for your records.
+            A <strong>random password</strong> is generated per new account, and you can download an import passwords CSV from the import summary.
           </p>
           <form className="students-csv-form" onSubmit={handleCsvImport}>
             <label className="form-label">
@@ -321,6 +347,14 @@ const InstructorPortal = ({ onBack, onLogout }) => {
             </div>
           ))}
         </div>
+        {importSummary.open && (
+          <ImportSummaryModal
+            lines={importSummary.lines}
+            hasCredentials={importSummary.credentials.length > 0}
+            onDownload={downloadCredentialsCsv}
+            onClose={() => setImportSummary({ open: false, lines: [], credentials: [] })}
+          />
+        )}
       </div>
     );
   };
@@ -946,6 +980,50 @@ const AlertModal = ({ message, onClose }) => {
         <h2 id="alert-title" className="modal-title">Notice</h2>
         <p className="confirm-message">{message}</p>
         <div className="modal-actions">
+          <button type="button" className="btn-primary" onClick={onClose}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ImportSummaryModal = ({ lines, hasCredentials, onDownload, onClose }) => {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKeyDown);
+    dialogRef.current?.querySelector('button')?.focus();
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  const onBackdropClick = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={onBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="import-summary-title"
+      ref={dialogRef}
+    >
+      <div className="modal-panel confirm">
+        <h2 id="import-summary-title" className="modal-title">Import Summary</h2>
+        <p className="confirm-message">{lines.join('\n')}</p>
+        {hasCredentials && (
+          <p className="confirm-message">
+            Download a CSV with only student email/password pairs for newly created accounts.
+          </p>
+        )}
+        <div className="modal-actions">
+          {hasCredentials && (
+            <button type="button" className="btn-secondary" onClick={onDownload}>
+              Download Passwords CSV
+            </button>
+          )}
           <button type="button" className="btn-primary" onClick={onClose}>
             OK
           </button>

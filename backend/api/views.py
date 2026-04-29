@@ -127,15 +127,23 @@ def import_students_csv(request):
     if "file" not in request.FILES:
         return JsonResponse({"error": "Missing file field (multipart form, CSV)."}, status=400)
 
-    raw = request.FILES["file"].read()
+    upload = request.FILES["file"]
     try:
-        text = raw.decode("utf-8-sig")
+        # Canvas exports with many assignment columns can create very wide rows.
+        # Raise parser field limit so large exports do not fail unexpectedly.
+        csv.field_size_limit(10 * 1024 * 1024)
+    except (OverflowError, ValueError):
+        pass
+
+    try:
+        text_stream = io.TextIOWrapper(upload.file, encoding="utf-8-sig", newline="")
+        reader = csv.DictReader(text_stream)
+        if not reader.fieldnames:
+            return JsonResponse({"error": "CSV has no header row."}, status=400)
     except UnicodeDecodeError:
         return JsonResponse({"error": "CSV must be UTF-8 encoded."}, status=400)
-
-    reader = csv.DictReader(io.StringIO(text))
-    if not reader.fieldnames:
-        return JsonResponse({"error": "CSV has no header row."}, status=400)
+    except csv.Error as e:
+        return JsonResponse({"error": f"Unable to parse CSV header: {e}"}, status=400)
 
     norm_to_actual = {}
     for f in reader.fieldnames:
@@ -167,49 +175,56 @@ def import_students_csv(request):
     skipped = []
     errors = []
     row_num = 1
+    existing_emails = set(Student.objects.values_list("email", flat=True))
 
-    for row in reader:
-        row_num += 1
-        student_raw = (row.get(k_student) or "").strip()
-        login_raw = row.get(k_login) or ""
-        section_val = (row.get(k_section) or "").strip() if k_section else ""
+    try:
+        for row in reader:
+            row_num += 1
+            student_raw = (row.get(k_student) or "").strip()
+            login_raw = row.get(k_login) or ""
+            section_val = (row.get(k_section) or "").strip() if k_section else ""
 
-        if student_raw.lower() == "points possible":
-            continue
-        if not student_raw and not str(login_raw).strip():
-            continue
+            if student_raw.lower() == "points possible":
+                continue
+            if not student_raw and not str(login_raw).strip():
+                continue
 
-        name = _normalize_canvas_student_name(student_raw)
-        email = _email_from_canvas_login(login_raw)
+            name = _normalize_canvas_student_name(student_raw)
+            email = _email_from_canvas_login(login_raw)
 
-        if not email:
-            errors.append({"row": row_num, "reason": "missing SIS Login ID", "student": student_raw})
-            continue
-        if not name:
-            errors.append({"row": row_num, "reason": "missing or invalid student name", "email": email})
-            continue
+            if not email:
+                errors.append({"row": row_num, "reason": "missing SIS Login ID", "student": student_raw})
+                continue
+            if not name:
+                errors.append({"row": row_num, "reason": "missing or invalid student name", "email": email})
+                continue
 
-        if Student.objects.filter(email=email).exists():
-            skipped.append({"row": row_num, "email": email, "reason": "already registered"})
-            continue
+            if email in existing_emails:
+                skipped.append({"row": row_num, "email": email, "reason": "already registered"})
+                continue
 
-        plain_password = _random_initial_password()
-        try:
-            s = Student.objects.create(
-                name=name,
-                email=email,
-                password=make_password(plain_password),
-                available_coins=0,
-                section=section_val,
-            )
-            created.append({
-                "id": s.id,
-                "name": s.name,
-                "email": s.email,
-                "initial_password": plain_password,
-            })
-        except Exception as e:
-            errors.append({"row": row_num, "email": email, "reason": str(e)})
+            plain_password = _random_initial_password()
+            try:
+                s = Student.objects.create(
+                    name=name,
+                    email=email,
+                    password=make_password(plain_password),
+                    available_coins=0,
+                    section=section_val,
+                )
+                created.append({
+                    "id": s.id,
+                    "name": s.name,
+                    "email": s.email,
+                    "initial_password": plain_password,
+                })
+                existing_emails.add(email)
+            except Exception as e:
+                errors.append({"row": row_num, "email": email, "reason": str(e)})
+    except UnicodeDecodeError:
+        return JsonResponse({"error": "CSV must be UTF-8 encoded."}, status=400)
+    except csv.Error as e:
+        return JsonResponse({"error": f"Unable to parse CSV at row {row_num}: {e}"}, status=400)
 
     return JsonResponse(
         {
