@@ -476,6 +476,17 @@ def students_list(request):
     data = [_student_json(s) for s in Student.objects.order_by("name")]
     return JsonResponse(data, safe=False)
 
+@csrf_exempt #delete function
+@require_http_methods(["DELETE"])
+def delete_student(request, student_id):
+    try:
+        student = Student.objects.get(pk=student_id)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+
+    student.delete()
+    return JsonResponse({"success": True}, status=200)
+
 @require_GET
 def products_list(request):
     data = [_product_json(p) for p in Product.objects.filter(is_active=True).order_by("name")]
