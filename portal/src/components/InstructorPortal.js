@@ -153,6 +153,28 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     }
   };
 
+  const deleteStudent = async (student) => { //Delete function
+    if (!student?.id) return;
+
+    try {
+      await fetchJson(`/api/students/${student.id}/`, {
+        method: 'DELETE',
+      });
+
+      setStudentList(prev => prev.filter(s => s.id !== student.id));
+
+      if (selectedStudent?.id === student.id) {
+        setSelectedStudent(null);
+        setActivityList([]);
+        setCurrentView('students');
+      }
+
+      showAlert('Student deleted.');
+    } catch (e) {
+      showAlert('Failed to delete student.');
+    }
+};
+
   // Return unique purchasers (student summary) for a product by matching activity.product name
   const purchasersFor = (product) => {
     if (!product) return [];
@@ -217,6 +239,18 @@ const InstructorPortal = ({ onBack, onLogout }) => {
               }}
             >
               View Activities
+            </button>
+
+            <button //Delete function
+              className="btn-danger"
+              onClick={() =>
+                askConfirm(
+                  `Delete ${student.name}? This will also delete their activity history.`,
+                  () => deleteStudent(student)
+                )
+              }
+            >
+              Delete
             </button>
           </div>
         ))}
