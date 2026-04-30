@@ -150,7 +150,7 @@ export default function InstructorRegistration({ onBack, onRegister }) {
           <button
             type="submit"
             className="cta-button"
-            style={{ width: "100%", marginTop: "20px" }}
+            style={{ width: "100%", marginTop: "20px", textAlign: "center" }}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Submitting..." : "Create Account"}

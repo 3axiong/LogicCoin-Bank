@@ -39,7 +39,11 @@ export default function InstructorRegistrationLogin({ onLogin, onBack }) {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="cta-button" style={{ width: "100%" }}>
+          <button
+            type="submit"
+            className="cta-button"
+            style={{ width: "100%", textAlign: "center" }}
+          >
             Access Registration
           </button>
         </form>
