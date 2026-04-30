@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
 import StudentPortal from './components/StudentPortal';
 import InstructorPortal from './components/InstructorPortal';
@@ -8,7 +9,7 @@ import ASUShell from "./components/ASUShell";
 import InstructorRegistrationLogin from "./components/InstructorRegistrationLogin";
 import InstructorRegistration from "./components/InstructorRegistration";
 
-function App() {
+function HomeScreen() {
   const [view, setView] = useState(() => {
     const saved = localStorage.getItem('logiccoin_user'); //TODO: Possibly need to change using local server and use server session for real login state
     if (saved) {
@@ -73,28 +74,6 @@ function App() {
     );
   }
 
-  if (view === 'instructor-registration-login') {
-    return (
-      <ASUShell>
-        <InstructorRegistrationLogin
-          onBack={() => setView('home')}
-          onLogin={() => setView('instructor-registration')}
-        />
-      </ASUShell>
-    );
-  }
-
-  if (view === 'instructor-registration') {
-    return (
-      <ASUShell>
-        <InstructorRegistration
-          onBack={() => setView('home')}
-          onRegister={() => setView('home')}
-        />
-      </ASUShell>
-    );
-  }
-
   return (
     <ASUShell>
       <div className="app">
@@ -125,18 +104,44 @@ function App() {
               >
                 Instructor portal
               </button>
-              <button
-                className="cta-button"
-                onClick={() => setView('instructor-registration-login')}
-              >
-                Register as Instructor
-              </button>
             </div>
           </div>
         </div>
         <ASULeaderboard />
       </div>
     </ASUShell>
+  );
+}
+
+function InstructorRegistrationRoute() {
+  const navigate = useNavigate();
+  const [unlocked, setUnlocked] = useState(false);
+
+  return (
+    <ASUShell>
+      {unlocked ? (
+        <InstructorRegistration
+          onBack={() => navigate('/')}
+          onRegister={() => navigate('/')}
+        />
+      ) : (
+        <InstructorRegistrationLogin
+          onBack={() => navigate('/')}
+          onLogin={() => setUnlocked(true)}
+        />
+      )}
+    </ASUShell>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/staff/instructor-registration" element={<InstructorRegistrationRoute />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
