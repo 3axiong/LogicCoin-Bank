@@ -49,7 +49,7 @@ export default function InstructorRegistration({ onBack, onRegister }) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/register-instructor/", {
+      const res = await fetch("/api/register_instructor/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
