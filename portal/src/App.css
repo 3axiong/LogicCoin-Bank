@@ -1180,3 +1180,152 @@ textarea:focus-visible {
 .nav-menu.centered {
   margin: 0 auto;
 }
+
+/* Instructor Registration Login Styles */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: var(--asu-white);
+}
+
+.login-box {
+  background: var(--asu-white);
+  border: 1px solid var(--asu-gray-4);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-box h2 {
+  color: var(--asu-maroon);
+  font-size: 28px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.login-subtitle {
+  color: var(--asu-black);
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Instructor Registration Styles */
+.registration-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: var(--asu-white);
+}
+
+.registration-box {
+  background: var(--asu-white);
+  border: 1px solid var(--asu-gray-4);
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.registration-box h2 {
+  color: var(--asu-maroon);
+  font-size: 28px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.registration-subtitle {
+  color: var(--asu-black);
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Form Group Styles */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: var(--asu-black);
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 1px solid var(--asu-gray-4);
+  border-radius: 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--asu-black);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--asu-maroon);
+  box-shadow: 0 0 0 2px rgba(140, 29, 64, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--asu-gray-4);
+}
+
+/* Message Styles */
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 0;
+  font-size: 14px;
+}
+
+.success-message {
+  color: #388e3c;
+  background-color: #e8f5e9;
+  border: 1px solid #81c784;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 0;
+  font-size: 14px;
+}
+
+/* Button Disabled State */
+.cta-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cta-button:disabled:hover {
+  transform: none;
+}
+
+.back-button {
+  background: var(--asu-white);
+  color: var(--asu-black);
+  border: 1px solid var(--asu-gray-4);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background: var(--asu-gray-6);
+  transform: scale(1.05);
+}

@@ -5,6 +5,8 @@ import InstructorPortal from './components/InstructorPortal';
 import ASULeaderboard from "./components/ASULeaderboard";
 import LoginScreen from "./components/LoginScreen";
 import ASUShell from "./components/ASUShell";
+import InstructorRegistrationLogin from "./components/InstructorRegistrationLogin";
+import InstructorRegistration from "./components/InstructorRegistration";
 
 function App() {
   const [view, setView] = useState(() => {
@@ -71,6 +73,28 @@ function App() {
     );
   }
 
+  if (view === 'instructor-registration-login') {
+    return (
+      <ASUShell>
+        <InstructorRegistrationLogin
+          onBack={() => setView('home')}
+          onLogin={() => setView('instructor-registration')}
+        />
+      </ASUShell>
+    );
+  }
+
+  if (view === 'instructor-registration') {
+    return (
+      <ASUShell>
+        <InstructorRegistration
+          onBack={() => setView('home')}
+          onRegister={() => setView('home')}
+        />
+      </ASUShell>
+    );
+  }
+
   return (
     <ASUShell>
       <div className="app">
@@ -100,6 +124,12 @@ function App() {
                 onClick={() => { setRole('instructor'); setView('login'); }}
               >
                 Instructor portal
+              </button>
+              <button
+                className="cta-button"
+                onClick={() => setView('instructor-registration-login')}
+              >
+                Register as Instructor
               </button>
             </div>
           </div>

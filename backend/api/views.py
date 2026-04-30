@@ -47,7 +47,7 @@ def register_student(request):
     email = data.get('email')
     password = data.get('password')
     coins = int(data.get('available_coins', 0))
-	section = (data.get('section') or '').strip() # LB added
+    section = (data.get('section') or '').strip() # LB added
 
     if not all([name, email, password]):
         return JsonResponse({'error': 'Missing required fields'}, status=400)
@@ -60,7 +60,7 @@ def register_student(request):
         email=email,
         password=make_password(password),
         available_coins=coins,
-		section=section # LB added
+        section=section # LB added
     )
     return JsonResponse({'message': 'registered', 'id': s.id}, status=201)
 
@@ -157,11 +157,12 @@ def login(request):
             'role': 'instructor',
         }, status=200)
 	
+
 def _json_request(request):
-	try:
-		return json.loads(request.body.decode('utf-8'))
-	except Exception:
-		return {}
+    try:
+        return json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return {}
      
 def _parse_json(request):
     try:
@@ -369,79 +370,80 @@ def awardCoins(request):
     return JsonResponse({'ok': True, 'available_coins': user.available_coins}, status=200)
 
 #Excepts POST requests to deduct coins from a student for transactions
+
 @csrf_exempt
 def transaction(request):
-	if request.method != 'POST':
-		return JsonResponse({'message': 'Method not allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'message': 'Method not allowed'}, status=405)
 
-	data = _json_request(request)
-	email = data.get('name') or data.get('email')
-	amount = data.get('amount')
-	if not email or amount is None:
-		return JsonResponse({'message': 'Missing name/email or amount'}, status=400)
+    data = _json_request(request)
+    email = data.get('name') or data.get('email')
+    amount = data.get('amount')
+    if not email or amount is None:
+        return JsonResponse({'message': 'Missing name/email or amount'}, status=400)
 
-	try:
-		student = Student.objects.get(email=email)
-	except Student.DoesNotExist:
-		return JsonResponse({'message': 'Student not found'}, status=404)
+    try:
+        student = Student.objects.get(email=email)
+    except Student.DoesNotExist:
+        return JsonResponse({'message': 'Student not found'}, status=404)
 
-	try:
-		amt = int(amount)
-	except (TypeError, ValueError):
-		return JsonResponse({'message': 'Invalid amount'}, status=400)
+    try:
+        amt = int(amount)
+    except (TypeError, ValueError):
+        return JsonResponse({'message': 'Invalid amount'}, status=400)
 
-	if student.available_coins < amt:
-		return JsonResponse({'message': 'Insufficient balance'}, status=400)
+    if student.available_coins < amt:
+        return JsonResponse({'message': 'Insufficient balance'}, status=400)
 
-	student.available_coins -= amt
-	student.save()
+    student.available_coins -= amt
+    student.save()
 
-	return JsonResponse({'message': 'Transaction successful', 'available_coins': student.available_coins})
+    return JsonResponse({'message': 'Transaction successful', 'available_coins': student.available_coins})
 
 
 # Possible future routes for user register/login
 '''
 @csrf_exempt
 def register(request):
-	if request.method != 'POST':
-		return JsonResponse({'message': 'Method not allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'message': 'Method not allowed'}, status=405)
 
-	data = _json_request(request)
-	email = data.get('email')
-	password = data.get('password')
-	if not email or not password:
-		return JsonResponse({'message': 'Missing email or password'}, status=400)
+    data = _json_request(request)
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return JsonResponse({'message': 'Missing email or password'}, status=400)
 
-	if Student.objects.filter(email=email).exists():
-		return JsonResponse({'message': 'User already exists'}, status=400)
+    if Student.objects.filter(email=email).exists():
+        return JsonResponse({'message': 'User already exists'}, status=400)
 
-	hashed = make_password(password)
-	student = Student(email=email, password=hashed)
-	student.save()
+    hashed = make_password(password)
+    student = Student(email=email, password=hashed)
+    student.save()
 
-	return JsonResponse({'message': 'registered successfully'})
+    return JsonResponse({'message': 'registered successfully'})
 
 
 @csrf_exempt
 def login(request):
-	if request.method != 'POST':
-		return JsonResponse({'message': 'Method not allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'message': 'Method not allowed'}, status=405)
 
-	data = _json_request(request)
-	email = data.get('email')
-	password = data.get('password')
-	if not email or not password:
-		return JsonResponse({'message': 'Missing email or password'}, status=400)
+    data = _json_request(request)
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return JsonResponse({'message': 'Missing email or password'}, status=400)
 
-	try:
-		user = Student.objects.get(email=email)
-	except Student.DoesNotExist:
-		return JsonResponse({'message': 'Student not found'}, status=404)
+    try:
+        user = Student.objects.get(email=email)
+    except Student.DoesNotExist:
+        return JsonResponse({'message': 'Student not found'}, status=404)
 
-	if check_password(password, user.password):
-		return JsonResponse({'message': 'login successful'})
-	else:
-		return JsonResponse({'message': 'wrong password'}, status=400)
+    if check_password(password, user.password):
+        return JsonResponse({'message': 'login successful'})
+    else:
+        return JsonResponse({'message': 'wrong password'}, status=400)
 '''
 
 def _student_json(s: Student):
