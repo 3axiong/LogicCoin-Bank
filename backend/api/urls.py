@@ -20,5 +20,6 @@ urlpatterns = [
 
     path("api/purchases/create/", views.create_purchase, name="create_purchase"),
     path("api/purchases/<int:purchase_id>/", views.update_purchase, name="update_purchase"),
+    path("api/students/bulk-delete/", views.bulk_delete_students, name="bulk_delete_students"), # bulk delete function
     path("api/students/<int:student_id>/", views.delete_student, name="delete_student"), #delete function
 ]
