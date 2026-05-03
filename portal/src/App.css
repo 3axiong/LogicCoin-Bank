@@ -1192,3 +1192,36 @@ textarea:focus-visible {
   border-bottom: 2px solid #ccc;
   color: #333;
 }
+
+.students-table .student-grid-row {
+  display: grid;
+  grid-template-columns: 40px 220px 120px 1fr 120px;
+  align-items: center;
+  column-gap: 24px;
+}
+
+.students-table .student-grid-row .student-name {
+  width: auto;
+  text-align: left;
+}
+
+.students-table .student-grid-row .student-section {
+  width: auto;
+  text-align: left;
+  color: #555;
+  font-weight: 600;
+}
+
+.students-table .student-grid-row .view-activities-button {
+  justify-self: center;
+}
+
+.students-table .student-grid-row .btn-danger {
+  justify-self: end;
+}
+
+.students-table .header-row {
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+  padding: 18px 0;
+}
