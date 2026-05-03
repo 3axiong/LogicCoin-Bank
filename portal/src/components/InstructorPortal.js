@@ -315,6 +315,12 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         </div>
   
         <div className="students-table">
+          <div className="student-row header-row">
+            <div style={{ width: "30px" }}></div>
+            <div className="student-name">Name</div>
+            <div className="student-section">Section</div>
+            <div style={{ flex: 1 }}></div>
+          </div>
           {filteredStudents.map(student => (
             <div key={student.id} className="student-row">
               <input
@@ -331,9 +337,6 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   
               <div className="student-name">
                 {student.name}
-                {student.section && (
-                  <span className="balance-highlight"> Section {student.section}</span>
-                )}
               </div>
   
               <button
