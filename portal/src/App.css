@@ -1180,3 +1180,15 @@ textarea:focus-visible {
 .nav-menu.centered {
   margin: 0 auto;
 }
+
+.student-section {
+  width: 100px;
+  color: #555;
+  font-weight: 600;
+}
+
+.header-row {
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+  color: #333;
+}
