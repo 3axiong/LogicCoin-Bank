@@ -488,6 +488,26 @@ def delete_student(request, student_id):
     student.delete()
     return JsonResponse({"success": True}, status=200)
 
+@csrf_exempt #bulk function
+@require_http_methods(["POST"])
+def bulk_delete_students(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    ids = data.get("ids", [])
+
+    if not isinstance(ids, list) or len(ids) == 0:
+        return JsonResponse({"error": "No student IDs provided"}, status=400)
+
+    deleted_count, _ = Student.objects.filter(id__in=ids).delete()
+
+    return JsonResponse({
+        "success": True,
+        "deleted_count": deleted_count
+    }, status=200)
+
 @require_GET
 def products_list(request):
     data = [_product_json(p) for p in Product.objects.filter(is_active=True).order_by("name")]
