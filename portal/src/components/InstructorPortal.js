@@ -17,6 +17,8 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [editingTxn, setEditingTxn] = useState(null);
   const [studentList, setStudentList] = useState([]);
+  const [sectionFilter, setSectionFilter] = useState("ALL"); //filter
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]); //filter
   const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
   const [alert, setAlert] = useState({ open: false, message: '' });
 
@@ -175,6 +177,38 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     }
 };
 
+  const deleteSelectedStudents = async () => { //bulk delete
+    if (selectedStudentIds.length === 0) {
+      showAlert("Please select at least one student.");
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedStudentIds.map(id =>
+          fetchJson(`/api/students/${id}/`, {
+            method: "DELETE",
+          })
+        )
+    );
+
+    setStudentList(prev =>
+      prev.filter(student => !selectedStudentIds.includes(student.id))
+    );
+
+    if (selectedStudentIds.includes(selectedStudent?.id)) {
+      setSelectedStudent(null);
+      setActivityList([]);
+      setCurrentView("students");
+    }
+
+    setSelectedStudentIds([]);
+    showAlert("Selected students deleted.");
+  } catch (e) {
+    showAlert("Failed to delete selected students.");
+  }
+};
+
   // Return unique purchasers (student summary) for a product by matching activity.product name
   const purchasersFor = (product) => {
     if (!product) return [];
@@ -223,40 +257,113 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     </div>
   );
 
-  const StudentsView = () => (
-    <div className="students-container">
-      <h1 className="page-title">Students list</h1>
-      <div className="students-table">
-        {studentList.map(student => (
-          <div key={student.id} className="student-row">
-            <div className="student-name">{student.name}</div>
-            <button 
-              className="view-activities-button"
-              onClick={() => {
-                setSelectedStudent(student);
-                setActivityList([]);
-                setCurrentView('studentActivities');
-              }}
-            >
-              View Activities
-            </button>
-
-            <button //Delete function
-              className="btn-danger"
-              onClick={() =>
-                askConfirm(
-                  `Delete ${student.name}? This will also delete their activity history.`,
-                  () => deleteStudent(student)
-                )
-              }
-            >
-              Delete
-            </button>
-          </div>
-        ))}
+  const StudentsView = () => { //delete and filter function
+    const sections = ["ALL", ...new Set(studentList.map(s => s.section).filter(Boolean))];
+  
+    const filteredStudents =
+      sectionFilter === "ALL"
+        ? studentList
+        : studentList.filter(s => s.section === sectionFilter);
+  
+    const selectVisibleStudents = () => {
+      setSelectedStudentIds(filteredStudents.map(student => student.id));
+    };
+  
+    const clearSelectedStudents = () => {
+      setSelectedStudentIds([]);
+    };
+  
+    return (
+      <div className="students-container">
+        <h1 className="page-title">Students list</h1>
+  
+        <div className="filter-row">
+          <select
+            className="form-input filter-select"
+            value={sectionFilter}
+            onChange={(e) => {
+              setSectionFilter(e.target.value);
+              setSelectedStudentIds([]);
+            }}
+          >
+            {sections.map(section => (
+              <option key={section} value={section}>
+                {section === "ALL" ? "All Sections" : `Section ${section}`}
+              </option>
+            ))}
+          </select>
+  
+          <button className="btn-secondary" onClick={selectVisibleStudents}>
+            Select Visible
+          </button>
+  
+          <button className="btn-secondary" onClick={clearSelectedStudents}>
+            Clear Selection
+          </button>
+  
+          <button
+            className="btn-danger"
+            onClick={() =>
+              askConfirm(
+                `Delete ${selectedStudentIds.length} selected student(s)? This will also delete their activity history.`,
+                deleteSelectedStudents
+              )
+            }
+          >
+            Delete Selected
+          </button>
+        </div>
+  
+        <div className="students-table">
+          {filteredStudents.map(student => (
+            <div key={student.id} className="student-row">
+              <input
+                type="checkbox"
+                checked={selectedStudentIds.includes(student.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedStudentIds(prev => [...prev, student.id]);
+                  } else {
+                    setSelectedStudentIds(prev => prev.filter(id => id !== student.id));
+                  }
+                }}
+              />
+  
+              <div className="student-name">
+                {student.name}
+                {student.section && (
+                  <span className="balance-highlight"> Section {student.section}</span>
+                )}
+              </div>
+  
+              <button
+                className="view-activities-button"
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setActivityList([]);
+                  setCurrentView('studentActivities');
+                }}
+              >
+                View Activities
+              </button>
+  
+              <button
+                className="btn-danger"
+                onClick={() =>
+                  askConfirm(
+                    `Delete ${student.name}? This will also delete their activity history.`,
+                    () => deleteStudent(student)
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const StudentActivitiesView = () => {
     const studentActivities = activityList.filter(activity => 
