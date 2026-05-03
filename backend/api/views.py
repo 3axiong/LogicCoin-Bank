@@ -448,7 +448,8 @@ def _student_json(s: Student):
     return {
         "id": s.id,
         "name": s.name,
-        "balance": s.balance,  # maps to available_coins 
+        "balance": s.balance, # maps to available_coins 
+		"section": s.section or "", #added for filter by section
     }
 
 def _product_json(p: Product):
