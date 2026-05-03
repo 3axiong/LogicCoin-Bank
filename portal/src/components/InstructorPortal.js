@@ -177,37 +177,35 @@ const InstructorPortal = ({ onBack, onLogout }) => {
     }
 };
 
-  const deleteSelectedStudents = async () => { //bulk delete
+  const deleteSelectedStudents = async () => {
     if (selectedStudentIds.length === 0) {
       showAlert("Please select at least one student.");
       return;
     }
-
+  
     try {
-      await Promise.all(
-        selectedStudentIds.map(id =>
-          fetchJson(`/api/students/${id}/`, {
-            method: "DELETE",
-          })
-        )
-    );
-
-    setStudentList(prev =>
-      prev.filter(student => !selectedStudentIds.includes(student.id))
-    );
-
-    if (selectedStudentIds.includes(selectedStudent?.id)) {
-      setSelectedStudent(null);
-      setActivityList([]);
-      setCurrentView("students");
+      await fetchJson("/api/students/bulk-delete/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedStudentIds }),
+      });
+  
+      setStudentList(prev =>
+        prev.filter(student => !selectedStudentIds.includes(student.id))
+      );
+  
+      if (selectedStudentIds.includes(selectedStudent?.id)) {
+        setSelectedStudent(null);
+        setActivityList([]);
+        setCurrentView("students");
+      }
+  
+      setSelectedStudentIds([]);
+      showAlert("Selected students deleted.");
+    } catch (e) {
+      showAlert("Failed to delete selected students.");
     }
-
-    setSelectedStudentIds([]);
-    showAlert("Selected students deleted.");
-  } catch (e) {
-    showAlert("Failed to delete selected students.");
-  }
-};
+  };
 
   // Return unique purchasers (student summary) for a product by matching activity.product name
   const purchasersFor = (product) => {
