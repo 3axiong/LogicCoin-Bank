@@ -315,14 +315,14 @@ const InstructorPortal = ({ onBack, onLogout }) => {
         </div>
   
         <div className="students-table">
-          <div className="student-row header-row">
+          <div className="student-row student-grid-row header-row"> 
             <div style={{ width: "30px" }}></div>
             <div className="student-name">Name</div>
             <div className="student-section">Section</div>
             <div style={{ flex: 1 }}></div>
           </div>
           {filteredStudents.map(student => (
-            <div key={student.id} className="student-row">
+            <div key={student.id} className="student-row student-grid-row">
               <input
                 type="checkbox"
                 checked={selectedStudentIds.includes(student.id)}
@@ -337,6 +337,10 @@ const InstructorPortal = ({ onBack, onLogout }) => {
   
               <div className="student-name">
                 {student.name}
+              </div>
+
+              <div className="student-section">
+                {student.section || "-"}
               </div>
   
               <button
